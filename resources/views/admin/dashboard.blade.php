@@ -69,7 +69,7 @@
         <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
             <div class="p-8 border-b flex justify-between items-center">
                 <h3 class="font-black text-xl">Transaksi Terakhir</h3>
-                <a href="admin-transactions.html" class="text-indigo-600 font-bold hover:underline">Lihat Semua</a>
+                <a href="transaksi" class="text-indigo-600 font-bold hover:underline">Lihat Semua</a>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
