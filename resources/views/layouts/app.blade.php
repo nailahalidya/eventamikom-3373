@@ -33,7 +33,7 @@
         </div>
         <div class="hidden md:flex gap-8 font-medium">
             <a href="/" class="text-indigo-600">Jelajahi</a>
-            <a href="/katalog" class="hover:text-indigo-600 transition">Kategori</a>
+            <a href="/" class="hover:text-indigo-600 transition">Kategori</a>
             <a href="/" class="hover:text-indigo-600 transition">Tentang Kami</a>
         </div>
         <!-- <div class="flex gap-3">
