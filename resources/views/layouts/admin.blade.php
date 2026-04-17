@@ -59,7 +59,7 @@
         </nav>
 
         <div class="pt-6 border-t border-indigo-800">
-            <a href="/welcome"
+            <a href="/"
                 class="flex items-center gap-3 px-4 py-3 text-indigo-300 hover:text-white transition font-medium">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
