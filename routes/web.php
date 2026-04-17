@@ -48,3 +48,7 @@ Route::get('/checkout', function () {
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/katalog', function () {
+    return view('katalog');
+});
