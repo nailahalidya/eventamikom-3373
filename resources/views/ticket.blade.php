@@ -98,7 +98,7 @@
                     class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold shadow-lg hover:bg-indigo-700 transition">
                     Cetak / Simpan PDF
                 </button>
-                <a href="index.html"
+                <a href="/welcome"
                     class="block text-center mt-4 text-slate-500 font-bold hover:text-indigo-600">Kembali ke Beranda</a>
             </div>
         </div>
