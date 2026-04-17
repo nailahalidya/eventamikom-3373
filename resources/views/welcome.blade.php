@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('content')
-<!-- Hero Section -->
+    <!-- Hero Section -->
     <section class="max-w-7xl mx-auto px-6 py-20 flex flex-col md:flex-row items-center gap-12">
         <div class="flex-1 space-y-8">
             <span
@@ -51,7 +51,7 @@
         </div>
     </section>
 
- <!-- Events Grid -->
+    <!-- Events Grid -->
     <section id="events" class="max-w-7xl mx-auto px-6 py-20">
         <div class="flex justify-between items-end mb-12">
             <div>
@@ -86,7 +86,7 @@
                     </div>
                     <div class="flex justify-between items-center pt-4 border-t">
                         <span class="text-2xl font-black text-indigo-600">Rp 150rb</span>
-                        <a href="/event"
+                        <a href="/event-detail"
                             class="px-5 py-2 bg-indigo-50 text-indigo-600 rounded-xl font-bold hover:bg-indigo-600 hover:text-white transition">Lihat
                             Detail</a>
                     </div>
@@ -115,7 +115,7 @@
                     </div>
                     <div class="flex justify-between items-center pt-4 border-t">
                         <span class="text-2xl font-black text-indigo-600">Rp 50rb</span>
-                        <a href="/event"
+                        <a href="/event-detail"
                             class="px-5 py-2 bg-indigo-50 text-indigo-600 rounded-xl font-bold hover:bg-indigo-600 hover:text-white transition">Lihat
                             Detail</a>
                     </div>
@@ -144,7 +144,7 @@
                     </div>
                     <div class="flex justify-between items-center pt-4 border-t">
                         <span class="text-2xl font-black text-indigo-600">Gratis</span>
-                        <a href="/event"
+                        <a href="/event-detail"
                             class="px-5 py-2 bg-indigo-50 text-indigo-600 rounded-xl font-bold hover:bg-indigo-600 hover:text-white transition">Lihat
                             Detail</a>
                     </div>
