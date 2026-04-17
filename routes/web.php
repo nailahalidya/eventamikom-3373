@@ -29,12 +29,12 @@ Route::get('/dashboard', function () {
     return view('admin.dashboard');
 });
 
-Route::get('/events', function () {
-    return view('admin.events');
+Route::get('/event', function () {
+    return view('admin.event');
 });
 
-Route::get('/transactions', function () {
-    return view('admin.transactions');
+Route::get('/transaksi', function () {
+    return view('admin.transaksi');
 });
 
 Route::get('/detail-event', function () {
