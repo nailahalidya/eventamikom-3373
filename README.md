@@ -1,4 +1,7 @@
 # eventamikom-3373
+**Nama : Nailah Putri Alidya
+NIM : 24.12.3373
+Kelas : 24SI05**
 
 TUGAS 2 : 
 **Dashboard** : https://eventamikom-3373-main-nr34km.free.laravel.cloud/dashboard
@@ -11,7 +14,3 @@ TUGAS 2 :
 
 TUGAS 3 : **Menambahkan Database Migration/Seeding**
 
-**Nama : Nailah Putri Alidya
-NIM : 24.12.3373
-Kelas : 24SI05
-**
