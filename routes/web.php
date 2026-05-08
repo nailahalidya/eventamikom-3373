@@ -26,7 +26,7 @@ Route::get('/', function () {
 //     return view('contact');
 // });
 
-Route::get('/dashboard', function () {
+Route::get('/admin', function () {
     return view('admin.dashboard');
 });
 
@@ -54,9 +54,10 @@ Route::get('/ticket', function () {
     return view('ticket');
 });
 
-Route::group ( [ 'prefix'  =>  'admin' ,  'as'  =>  'admin.' ],  function  () {
-    Route::get( '/' , [DashboardController:: class ,  'index' ])->name( 'index' );
-});
+
+// Route::group ( [ 'prefix'  =>  'admin' ,  'as'  =>  'admin.' ],  function  () {
+//     Route::get( '/' , [DashboardController:: class ,  'index' ])->name( 'index' );
+// });
 
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get( '/' , [DashboardController:: class ,  'index' ])->name( 'index' );
