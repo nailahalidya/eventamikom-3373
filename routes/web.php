@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\EventController as EventAdminController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -51,4 +52,13 @@ Route::get('/', function () {
 
 Route::get('/ticket', function () {
     return view('ticket');
+});
+
+Route::group ( [ 'prefix'  =>  'admin' ,  'as'  =>  'admin.' ],  function  () {
+    Route::get( '/' , [DashboardController:: class ,  'index' ])->name( 'index' );
+});
+
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get( '/' , [DashboardController:: class ,  'index' ])->name( 'index' );
+    Route::resource('events', EventAdminController::class);
 });
