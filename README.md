@@ -17,3 +17,8 @@ TUGAS 3 : **Menambahkan Database Migration/Seeding**
 TUGAS 4 : **FOLDER EVENTS**
 https://eventamikom-3373-main-nr34km.free.laravel.cloud/admin/events 
 
+TUGAS 8 : **AUTHENTICATION & MIDDLEWARE**
+https://eventamikom-3373-main-nr34km.free.laravel.cloud/admin/login 
+
+TUGAS 10 : **CHECKOUT LOGIC & TRANSAKSI**
+
