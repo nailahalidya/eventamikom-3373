@@ -44,20 +44,22 @@
                             <p class="text-indigo-600 font-bold mt-2">1 x Rp 150.000</p>
                         </div>
                     </div>
-                    <div class="mt-8 pt-6 border-t space-y-3">
-                        <div class="flex justify-between text-slate-500">
-                            <span>Harga Tiket</span>
-                            <span>Rp 150.000</span>
-                        </div>
-                        <div class="flex justify-between text-slate-500">
-                            <span>Biaya Layanan</span>
-                            <span>Rp 5.000</span>
-                        </div>
-                        <div class="flex justify-between text-2xl font-black mt-4 pt-4 border-t">
-                            <span>Total Bayar</span>
-                            <span class="text-indigo-600">Rp 155.000</span>
-                        </div>
-                    </div>
+                    <div class="flex justify-between text-slate-500">
+                    <span>Harga Tiket</span>
+                    <span>Rp {{ number_format($event->price, 0, ',', '.') }}</span>
+                </div>
+
+                <div class="flex justify-between text-slate-500">
+                    <span>Biaya Layanan</span>
+                    <span>Rp 5.000</span>
+                </div>
+
+                <div class="flex justify-between text-2xl font-black mt-4 pt-4 border-t">
+                    <span>Total Bayar</span>
+                    <span class="text-indigo-600">
+                        Rp {{ number_format($event->price + 5000, 0, ',', '.') }}
+                    </span>
+                </div>
                 </div>
 
                 <!-- Form Card -->

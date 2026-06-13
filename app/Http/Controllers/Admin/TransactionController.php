@@ -13,6 +13,6 @@ class TransactionController extends Controller
             ->latest()
             ->paginate(20);
 
-        return view('admin.transactions.index', compact('transactions'));
+        return view('admin.transaction.index', compact('transactions'));
     }
 }

@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Event;
 use App\Models\Category;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class EventController extends Controller
@@ -13,8 +13,9 @@ class EventController extends Controller
     public function index()
     {
         $events = Event::with('category')->latest()->get();
+        $categories = Category::all();
 
-        return view('admin.events.index', compact('events'));
+        return view('admin.events.index', compact('events', 'categories'));
     }
 
     public function create()
@@ -25,39 +26,28 @@ class EventController extends Controller
     }
 
     public function store(Request $request)
-{
-    $request->validate([
-        'title' => 'required|string|max:255',
-        'description' => 'required',
-        'location' => 'required|string|max:255',
-        'date' => 'required',
-        'price' => 'required|numeric',
-        'stock' => 'required|numeric',
-        'category_id' => 'required|exists:categories,id',
-        'poster' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
-    ]);
+    {
+        $data = $request->validate([
+            'category_id' => 'required|exists:categories,id',
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'date' => 'required|date',
+            'location' => 'required|string|max:255',
+            'price' => 'required|numeric|min:0',
+            'stock' => 'required|numeric|min:0',
+            'poster' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:40960',
+        ]);
 
-    $posterPath = null;
+        if ($request->hasFile('poster')) {
+            $data['poster_path'] = $request->file('poster')->store('posters', 'public');
+        }
 
-    if ($request->hasFile('poster')) {
-        $posterPath = $request->file('poster')->store('posters', 'public');
+        Event::create($data);
+
+        return redirect()
+            ->route('admin.events.index')
+            ->with('success', 'Event berhasil ditambahkan.');
     }
-
-    Event::create([
-        'title' => $request->title,
-        'description' => $request->description,
-        'poster_path' => $posterPath,
-        'location' => $request->location,
-        'date' => $request->date,
-        'price' => $request->price,
-        'stock' => $request->stock,
-        'category_id' => $request->category_id,
-    ]);
-
-    return redirect()
-        ->route('admin.events.index')
-        ->with('success', 'Event berhasil ditambahkan');
-}
 
     public function edit(Event $event)
     {
@@ -68,53 +58,42 @@ class EventController extends Controller
 
     public function update(Request $request, Event $event)
     {
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required',
-            'location' => 'required|string|max:255',
-            'date' => 'required',
-            'price' => 'required|numeric',
-            'stock' => 'required|numeric',
+        $data = $request->validate([
             'category_id' => 'required|exists:categories,id',
-            'poster' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'date' => 'required|date',
+            'location' => 'required|string|max:255',
+            'price' => 'required|numeric|min:0',
+            'stock' => 'required|numeric|min:0',
+            'poster' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:10240',
         ]);
-
-        $posterPath = $event->poster;
 
         if ($request->hasFile('poster')) {
-            if ($event->poster) {
-                Storage::disk('public')->delete($event->poster);
+            if ($event->poster_path && Storage::disk('public')->exists($event->poster_path)) {
+                Storage::disk('public')->delete($event->poster_path);
             }
 
-            $posterPath = $request->file('poster')->store('posters', 'public');
+            $data['poster_path'] = $request->file('poster')->store('posters', 'public');
         }
 
-        $event->update([
-            'title' => $request->title,
-            'description' => $request->description,
-            'poster' => $posterPath,
-            'location' => $request->location,
-            'date' => $request->date,
-            'price' => $request->price,
-            'stock' => $request->stock,
-            'category_id' => $request->category_id,
-        ]);
+        $event->update($data);
 
         return redirect()
             ->route('admin.events.index')
-            ->with('success', 'Event berhasil diperbarui');
+            ->with('success', 'Event berhasil diperbarui.');
     }
 
     public function destroy(Event $event)
     {
-        if ($event->poster) {
-            Storage::disk('public')->delete($event->poster);
+        if ($event->poster_path && Storage::disk('public')->exists($event->poster_path)) {
+            Storage::disk('public')->delete($event->poster_path);
         }
 
         $event->delete();
 
         return redirect()
             ->route('admin.events.index')
-            ->with('success', 'Event berhasil dihapus');
+            ->with('success', 'Event berhasil dihapus.');
     }
 }
