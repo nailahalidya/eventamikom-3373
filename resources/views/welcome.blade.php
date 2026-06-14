@@ -2,6 +2,7 @@
 
 @section('content')
 
+    <!-- Hero Section -->
     <section class="max-w-7xl mx-auto px-6 py-20 flex flex-col md:flex-row items-center gap-12">
         <div class="flex-1 space-y-8">
             <span
@@ -39,9 +40,9 @@
                 class="absolute -bottom-10 -right-10 w-64 h-64 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000">
             </div>
 
-            <img src="{{ asset('storage/asset/concert.png') }}"
+            <img src="{{ asset('assets/concert.png') }}"
                  alt="Concert"
-                 class="rounded-4xl shadow-2xl relative z-10 w-full object-cover aspect-4/5 object-center">
+                 class="rounded-[2rem] shadow-2xl relative z-10 w-full object-cover aspect-[4/5] object-center">
 
             <div class="absolute -bottom-6 -left-6 glass p-6 rounded-2xl shadow-xl z-20 border border-white">
                 <div class="flex items-center gap-4">
@@ -70,6 +71,7 @@
     </section>
 
 
+    <!-- Events Grid -->
     <section id="events" class="max-w-7xl mx-auto px-6 py-20">
 
         <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
@@ -106,14 +108,14 @@
                 <div
                     class="group bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden">
 
-                    <div class="relative overflow-hidden aspect-3/4">
+                    <div class="relative overflow-hidden aspect-[3/4]">
 
                         @if ($event->poster_path)
                             <img src="{{ asset('storage/' . $event->poster_path) }}"
                                 alt="{{ $event->title }}"
                                 class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                         @else
-                            <img src="{{ asset('storage/asset/concert.png') }}"
+                            <img src="{{ asset('assets/concert.png') }}"
                                 alt="{{ $event->title }}"
                                 class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                         @endif
@@ -184,6 +186,7 @@
     </section>
 
 
+    <!-- Partner Section -->
     <section class="max-w-7xl mx-auto px-6 py-20">
 
         <div class="text-center mb-12">
