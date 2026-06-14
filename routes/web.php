@@ -10,6 +10,12 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\PartnerController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\Admin\TransactionController;
+use Illuminate\Support\Facades\Artisan;
+
+Route::get('/jalankan-symlink', function () {
+    Artisan::call('storage:link');
+    return 'Symlink berhasil dibuat! Silakan cek kembali foto kamu.';
+});
 
 /*
 |--------------------------------------------------------------------------
