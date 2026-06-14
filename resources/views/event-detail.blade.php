@@ -93,7 +93,7 @@
             </div>
 
             @if($event->stock > 0)
-                <a href="{{ route('admin.transactions.create', $event->id) }}"
+                <a href="{{ url('checkout/' . $event->id) }}"
                    class="w-full md:w-auto px-8 py-4 bg-white text-indigo-900 rounded-2xl font-bold text-lg text-center shadow-lg hover:scale-105 transition-transform">
                     Pesan Tiket Sekarang
                 </a>
