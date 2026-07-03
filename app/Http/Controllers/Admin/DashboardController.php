@@ -10,29 +10,37 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // Ambil 3 transaksi terbaru untuk tabel dashboard
+        // Status transaksi yang dianggap sudah berhasil/lunas
+        $successStatuses = ['success', 'settlement'];
+
+        // Ambil 5 transaksi terbaru untuk dashboard
         $latestTransactions = Transaction::with('event')
             ->latest()
-            ->take(3)
+            ->take(5)
             ->get();
 
-        // Total pendapatan hanya dari transaksi yang sudah sukses
-        $totalRevenue = Transaction::whereIn('status', ['success', 'settlement'])
+        // Alias tambahan kalau ada Blade yang pakai nama recentTransactions
+        $recentTransactions = $latestTransactions;
+
+        // Total pendapatan dari transaksi sukses/lunas
+        $totalRevenue = Transaction::whereIn('status', $successStatuses)
             ->sum('total_price');
 
-        // Tiket terjual dihitung dari jumlah transaksi sukses
-        $ticketsSold = Transaction::whereIn('status', ['success', 'settlement'])
+        // Tiket terjual dari transaksi sukses/lunas
+        $ticketsSold = Transaction::whereIn('status', $successStatuses)
             ->count();
 
-        // Jumlah event yang ada
-        $activeEvents = Event::count();
+        // Event aktif: event yang tanggalnya hari ini atau ke depan
+        $activeEvents = Event::where('date', '>=', now())
+            ->count();
 
-        // Jumlah transaksi pending
+        // Transaksi yang masih pending
         $pendingOrders = Transaction::where('status', 'pending')
             ->count();
 
         return view('admin.index', compact(
             'latestTransactions',
+            'recentTransactions',
             'totalRevenue',
             'ticketsSold',
             'activeEvents',

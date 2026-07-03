@@ -30,7 +30,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $entertainmentCategory = Category::create([
-            'name' => 'Entertainment', // Memperbaiki typo: Entertaiment -> Entertainment
+            'name' => 'Entertainment', 
             'slug' => 'entertainment',
         ]);
 

@@ -38,7 +38,7 @@
 
         <p class="text-slate-400 text-sm font-bold uppercase mb-1">Total Pendapatan</p>
         <h3 class="text-2xl font-black">
-            Rp {{ number_format($totalRevenue, 0, ',', '.') }}
+            Rp {{ number_format($totalRevenue ?? 0, 0, ',', '.') }}
         </h3>
     </div>
 
@@ -56,7 +56,7 @@
 
         <p class="text-slate-400 text-sm font-bold uppercase mb-1">Tiket Terjual</p>
         <h3 class="text-2xl font-black">
-            {{ $ticketsSold }}
+            {{ number_format($ticketsSold ?? 0, 0, ',', '.') }}
         </h3>
     </div>
 
@@ -74,7 +74,7 @@
 
         <p class="text-slate-400 text-sm font-bold uppercase mb-1">Event Aktif</p>
         <h3 class="text-2xl font-black">
-            {{ $activeEvents }} Event
+            {{ $activeEvents ?? 0 }} Event
         </h3>
     </div>
 
@@ -92,7 +92,7 @@
 
         <p class="text-slate-400 text-sm font-bold uppercase mb-1">Pesanan Pending</p>
         <h3 class="text-2xl font-black">
-            {{ $pendingOrders }} Pesanan
+            {{ $pendingOrders ?? 0 }} Pesanan
         </h3>
     </div>
 </div>
@@ -117,30 +117,39 @@
         <table class="w-full text-left border-collapse">
             <thead class="bg-slate-50 text-slate-400 uppercase text-[10px] font-black tracking-widest">
                 <tr>
+                    <th class="px-8 py-4">Tgl Transaksi</th>
                     <th class="px-8 py-4">Pembeli</th>
                     <th class="px-8 py-4">Event</th>
                     <th class="px-8 py-4">Status</th>
-                    <th class="px-8 py-4">Total</th>
+                    <th class="px-8 py-4 text-right">Total</th>
                 </tr>
             </thead>
 
             <tbody class="divide-y border-t">
                 @forelse($latestTransactions as $trx)
                     <tr class="hover:bg-slate-50 transition">
+                        <td class="px-8 py-6 text-sm text-slate-600 max-w-xs break-all">
+                            {{ $trx->created_at ? $trx->created_at->format('d M y - H:i') : '-' }}
+                            <br>
+                            <span class="text-xs text-slate-400">
+                                {{ $trx->order_id }}
+                            </span>
+                        </td>
+
                         <td class="px-8 py-6">
-                            <p class="font-bold uppercase tracking-wide text-sm">
+                            <p class="font-bold uppercase tracking-wide text-sm truncate max-w-[150px]">
                                 {{ $trx->customer_name }}
                             </p>
-                            <p class="text-xs text-slate-400">
+                            <p class="text-xs text-slate-400 truncate max-w-[150px]">
                                 {{ $trx->customer_email }}
                             </p>
                         </td>
 
-                        <td class="px-8 py-6 font-medium text-slate-600">
+                        <td class="px-8 py-6 font-medium text-slate-600 max-w-xs truncate">
                             {{ $trx->event->title ?? '-' }}
                         </td>
 
-                        <td class="px-8 py-6">
+                        <td class="px-8 py-6 whitespace-nowrap">
                             @if($trx->status === 'success' || $trx->status === 'settlement')
                                 <span class="px-3 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-bold uppercase">
                                     Success
@@ -149,20 +158,24 @@
                                 <span class="px-3 py-1 bg-orange-100 text-orange-700 rounded-lg text-xs font-bold uppercase">
                                     Pending
                                 </span>
+                            @elseif($trx->status === 'challenge')
+                                <span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-lg text-xs font-bold uppercase">
+                                    Challenge
+                                </span>
                             @else
                                 <span class="px-3 py-1 bg-rose-100 text-rose-700 rounded-lg text-xs font-bold uppercase">
-                                    {{ $trx->status }}
+                                    {{ $trx->status ?? 'Unknown' }}
                                 </span>
                             @endif
                         </td>
 
-                        <td class="px-8 py-6 font-black text-indigo-600">
-                            Rp {{ number_format($trx->total_price, 0, ',', '.') }}
+                        <td class="px-8 py-6 font-black text-indigo-600 whitespace-nowrap text-right">
+                            Rp {{ number_format($trx->total_price ?? 0, 0, ',', '.') }}
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4" class="px-8 py-10 text-center text-slate-500">
+                        <td colspan="5" class="px-8 py-10 text-center text-slate-500">
                             Belum ada transaksi.
                         </td>
                     </tr>

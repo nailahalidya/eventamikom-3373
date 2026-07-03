@@ -1,20 +1,16 @@
 @extends('layouts.app')
 
 @section('content')
-@php
-    $poster = $event->poster_path ?? $event->poster ?? null;
-@endphp
-
 <main class="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 lg:grid-cols-3 gap-12">
     <!-- Left: Poster -->
     <div class="lg:col-span-1">
         <div class="sticky top-32">
-            @if($poster)
-                <img src="{{ asset('storage/' . $poster) }}"
+            @if($event->poster_path)
+                <img src="{{ asset('storage/' . $event->poster_path) }}"
                      alt="{{ $event->title }}"
                      class="w-full rounded-[2.5rem] shadow-2xl border-8 border-white object-cover aspect-[3/4]">
             @else
-                <img src="https://placehold.co/600x800?text=No+Image"
+                <img src="{{ asset('assets/concert.png') }}"
                      alt="{{ $event->title }}"
                      class="w-full rounded-[2.5rem] shadow-2xl border-8 border-white object-cover aspect-[3/4]">
             @endif
