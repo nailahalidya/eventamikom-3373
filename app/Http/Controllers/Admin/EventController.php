@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\Category;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use App\Services\CloudinaryService;
 
 class EventController extends Controller
 {
@@ -42,11 +42,11 @@ class EventController extends Controller
             'poster' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:40960',
         ]);
 
-        // Admin selalu menjadi owner, tidak perlu diisi manual
+        // Admin selalu menjadi owner
         $data['owner_type'] = 'admin';
 
         if ($request->hasFile('poster')) {
-            $data['poster_path'] = \App\Services\CloudinaryService::upload($request->file('poster'), 'posters');
+            $data['poster_path'] = CloudinaryService::upload($request->file('poster'), 'posters');
         }
 
         Event::create($data);
@@ -80,17 +80,17 @@ class EventController extends Controller
             'poster' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:10240',
         ]);
 
-        // Pertahankan owner_type existing, atau default ke 'admin'
         $data['owner_type'] = $event->owner_type ?? 'admin';
 
         if ($request->hasFile('poster')) {
-            if ($event->poster_path && !\Illuminate\Support\Str::startsWith($event->poster_path, ['http://', 'https://']) && Storage::disk('public')->exists($event->poster_path)) {
-                Storage::disk('public')->delete($event->poster_path);
+            // Hapus gambar lama dari Cloudinary jika ada
+            if ($event->poster_path) {
+                CloudinaryService::delete($event->poster_path);
             }
 
-            $data['poster_path'] = \App\Services\CloudinaryService::upload($request->file('poster'), 'posters');
+            // Upload gambar baru
+            $data['poster_path'] = CloudinaryService::upload($request->file('poster'), 'posters');
         }
-
 
         $event->update($data);
 
@@ -101,8 +101,9 @@ class EventController extends Controller
 
     public function destroy(Event $event)
     {
-        if ($event->poster_path && Storage::disk('public')->exists($event->poster_path)) {
-            Storage::disk('public')->delete($event->poster_path);
+        // Hapus poster dari Cloudinary jika ada
+        if ($event->poster_path) {
+            CloudinaryService::delete($event->poster_path);
         }
 
         $event->delete();

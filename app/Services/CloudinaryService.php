@@ -8,19 +8,19 @@ use Illuminate\Support\Facades\Log;
 class CloudinaryService
 {
     /**
-     * Upload file ke Cloudinary jika CLOUDINARY_URL dikonfigurasi,
-     * jika tidak fallback ke local storage disk 'public'.
+     * Upload file ke Cloudinary
      *
      * @param \Illuminate\Http\UploadedFile $file
      * @param string $folder
-     * @return string (Full HTTPS URL dari Cloudinary atau relative path local)
+     * @return string|null (Full HTTPS URL dari Cloudinary)
      */
-    public static function upload($file, string $folder = 'posters'): string
+    public static function upload($file, string $folder = 'posters'): ?string
     {
         $cloudinaryUrl = env('CLOUDINARY_URL');
 
         if (!$cloudinaryUrl) {
-            return $file->store($folder, 'public');
+            Log::error('Cloudinary Upload Failed: CLOUDINARY_URL is missing in environment variables.');
+            return null;
         }
 
         try {
@@ -30,7 +30,8 @@ class CloudinaryService
             $cloudName = $parsed['host'] ?? '';
 
             if (empty($cloudName) || empty($apiKey) || empty($apiSecret)) {
-                return $file->store($folder, 'public');
+                Log::error('Cloudinary Upload Failed: Invalid CLOUDINARY_URL format.');
+                return null;
             }
 
             $timestamp = time();
@@ -62,11 +63,11 @@ class CloudinaryService
                 return $response['secure_url'];
             }
 
-            Log::warning('Cloudinary Upload Unsuccessful: ' . $response->body());
-            return $file->store($folder, 'public');
+            Log::error('Cloudinary Upload Unsuccessful: ' . $response->body());
+            return null;
         } catch (\Exception $e) {
             Log::error('Cloudinary Upload Exception: ' . $e->getMessage());
-            return $file->store($folder, 'public');
+            return null;
         }
     }
 }

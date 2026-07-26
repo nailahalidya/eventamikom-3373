@@ -1,82 +1,4 @@
-<?php
-
-namespace App\Http\Controllers\Organizer;
-
-use App\Http\Controllers\Controller;
-use App\Models\Category;
-use App\Models\Event;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
-
-class EventController extends Controller
-{
-    public function index()
-    {
-        $organizer = Auth::user()->organizer;
-
-        $events = Event::with('category')
-            ->where('organizer_id', $organizer->id)
-            ->latest()
-            ->get();
-
-        $categories = Category::all();
-
-        return view('organizer.events.index', compact(
-            'events',
-            'categories'
-        ));
-    }
-
-    public function create()
-    {
-        $categories = Category::all();
-
-        return view('organizer.events.create', compact('categories'));
-    }
-
-    public function store(Request $request)
-    {
-        $organizer = Auth::user()->organizer;
-
-        $data = $request->validate([
-            'category_id' => 'required|exists:categories,id',
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'date' => 'required|date',
-            'location' => 'required|string|max:255',
-            'price' => 'required|numeric|min:0',
-            'stock' => 'required|numeric|min:0',
-            'poster' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:40960',
-        ]);
-
-        $data['owner_type'] = 'organizer';
-        $data['organizer_id'] = $organizer->id;
-
-        if ($request->hasFile('poster')) {
-            $data['poster_path'] = \App\Services\CloudinaryService::upload($request->file('poster'), 'posters');
-        }
-
-        Event::create($data);
-
-        return redirect()
-            ->route('organizer.events.index')
-            ->with('success', 'Event berhasil ditambahkan.');
-
-    }
-
-    public function edit(Event $event)
-    {
-        $organizer = Auth::user()->organizer;
-
-        abort_if($event->organizer_id !== $organizer->id, 403);
-
-        $categories = Category::all();
-
-        return view('organizer.events.edit', compact('event', 'categories'));
-    }
-
-    public function update(Request $request, Event $event)
+public function update(Request $request, Event $event)
     {
         $organizer = Auth::user()->organizer;
 
@@ -94,17 +16,23 @@ class EventController extends Controller
         ]);
 
         if ($request->hasFile('poster')) {
+            // Hanya hapus file lokal jika BUKAN URL Cloudinary dan file lokal ada
             if (
                 $event->poster_path &&
-                !\Illuminate\Support\Str::startsWith($event->poster_path, ['http://', 'https://']) &&
-                Storage::disk('public')->exists($event->poster_path)
+                !\Illuminate\Support\Str::startsWith($event->poster_path, ['http://', 'https://'])
             ) {
-                Storage::disk('public')->delete($event->poster_path);
+                try {
+                    Storage::disk('public')->delete($event->poster_path);
+                } catch (\Exception $e) {
+                    // Abaikan jika storage read-only
+                }
             }
 
-            $data['poster_path'] = \App\Services\CloudinaryService::upload($request->file('poster'), 'posters');
+            $uploadedUrl = \App\Services\CloudinaryService::upload($request->file('poster'), 'posters');
+            if ($uploadedUrl) {
+                $data['poster_path'] = $uploadedUrl;
+            }
         }
-
 
         $event->update($data);
 
@@ -121,10 +49,13 @@ class EventController extends Controller
 
         if (
             $event->poster_path &&
-            Storage::disk('public')->exists($event->poster_path)
+            !\Illuminate\Support\Str::startsWith($event->poster_path, ['http://', 'https://'])
         ) {
-
-            Storage::disk('public')->delete($event->poster_path);
+            try {
+                Storage::disk('public')->delete($event->poster_path);
+            } catch (\Exception $e) {
+                // Abaikan jika storage read-only
+            }
         }
 
         $event->delete();
@@ -133,4 +64,3 @@ class EventController extends Controller
             ->route('organizer.events.index')
             ->with('success', 'Event berhasil dihapus.');
     }
-}
