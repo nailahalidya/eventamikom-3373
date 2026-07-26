@@ -34,9 +34,16 @@ class EventController extends Controller
             'date' => 'required|date',
             'location' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
+            'early_bird_price' => 'nullable|numeric|min:0',
+            'early_bird_until' => 'nullable|date',
+            'presale_price' => 'nullable|numeric|min:0',
+            'presale_until' => 'nullable|date',
             'stock' => 'required|numeric|min:0',
             'poster' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:40960',
         ]);
+
+        // Admin selalu menjadi owner, tidak perlu diisi manual
+        $data['owner_type'] = 'admin';
 
         if ($request->hasFile('poster')) {
             $data['poster_path'] = $request->file('poster')->store('posters', 'public');
@@ -65,9 +72,16 @@ class EventController extends Controller
             'date' => 'required|date',
             'location' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
+            'early_bird_price' => 'nullable|numeric|min:0',
+            'early_bird_until' => 'nullable|date',
+            'presale_price' => 'nullable|numeric|min:0',
+            'presale_until' => 'nullable|date',
             'stock' => 'required|numeric|min:0',
             'poster' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:10240',
         ]);
+
+        // Pertahankan owner_type existing, atau default ke 'admin'
+        $data['owner_type'] = $event->owner_type ?? 'admin';
 
         if ($request->hasFile('poster')) {
             if ($event->poster_path && Storage::disk('public')->exists($event->poster_path)) {

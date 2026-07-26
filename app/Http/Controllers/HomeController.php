@@ -12,34 +12,48 @@ class HomeController extends Controller
     {
         $partners = Partner::latest()->get();
         $categories = Category::latest()->get();
-        $events = Event::with('category')->latest()->get();
+        $events = Event::with(['category', 'reviews'])->latest()->get();
+
+        $topRatedEvents = Event::with(['category', 'organizer', 'reviews'])
+            ->withAvg('reviews', 'rating')
+            ->withCount('reviews')
+            ->orderByDesc('reviews_avg_rating')
+            ->orderByDesc('reviews_count')
+            ->take(3)
+            ->get();
 
         return view('welcome', compact(
             'partners',
             'categories',
-            'events'
+            'events',
+            'topRatedEvents'
         ));
     }
-public function category(int $id){
-    $categories=Category::all();
 
-    $partners=Partner::all();
+    public function category(int $id)
+    {
+        $categories = Category::all();
+        $partners = Partner::all();
 
-    $events=Event::with('category')
-            ->where(
-                'category_id',
-                $id
-            )
+        $events = Event::with(['category', 'reviews'])
+            ->where('category_id', $id)
             ->latest()
             ->get();
 
-    return view(
-        'welcome',
-        compact(
+        $topRatedEvents = Event::with(['category', 'organizer', 'reviews'])
+            ->withAvg('reviews', 'rating')
+            ->withCount('reviews')
+            ->orderByDesc('reviews_avg_rating')
+            ->orderByDesc('reviews_count')
+            ->take(3)
+            ->get();
+
+        return view('welcome', compact(
             'categories',
             'partners',
-            'events'
-        )
-    );
-}
+            'events',
+            'topRatedEvents'
+        ));
+    }
+
 }

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kamu Sedang Offline — AmikomEventHub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .glass {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-900 via-slate-900 to-purple-950 text-white min-h-screen flex items-center justify-center p-6 text-center relative overflow-hidden">
+
+    <!-- Decorative background blobs -->
+    <div class="absolute -top-24 -left-24 w-96 h-96 bg-indigo-600/30 rounded-full blur-3xl"></div>
+    <div class="absolute -bottom-24 -right-24 w-96 h-96 bg-purple-600/30 rounded-full blur-3xl"></div>
+
+    <div class="max-w-md w-full glass rounded-3xl p-8 border border-white/10 shadow-2xl relative z-10 text-slate-800">
+        <div class="w-20 h-20 bg-indigo-600/10 rounded-2xl flex items-center justify-center text-4xl mx-auto mb-6 shadow-inner animate-pulse">
+            📡
+        </div>
+
+        <span class="px-3 py-1 bg-amber-100 text-amber-800 font-bold text-xs rounded-full uppercase tracking-wider inline-block mb-3">
+            Modus Offline
+        </span>
+
+        <h1 class="text-2xl font-black text-slate-900 mb-2">Koneksi Terputus</h1>
+        
+        <p class="text-slate-600 text-sm mb-6 leading-relaxed">
+            Sepertinya perangkat Anda sedang tidak terhubung ke jaringan internet. Halaman ini membutuhkan koneksi aktif untuk memperbarui daftar event terbaru.
+        </p>
+
+        <div class="space-y-3">
+            <button onclick="window.location.reload()" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm transition shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Coba Muat Ulang
+            </button>
+
+            <a href="/" class="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold text-sm transition block">
+                Kembali ke Beranda Cek Cache
+            </a>
+        </div>
+    </div>
+
+</body>
+</html>

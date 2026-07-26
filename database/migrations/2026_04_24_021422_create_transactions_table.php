@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('organizer_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('event_id')->constrained()->cascadeOnDelete();
             $table->string('order_id')->unique(); // No Pesanan unik
             $table->string('customer_name');
@@ -22,6 +23,8 @@ return new class extends Migration
             $table->string('status')->default('Pending');
             $table->string('snap_token')->nullable();
             $table->timestamps();
+            $table->enum('owner_type', ['admin', 'organizer'])
+                ->default('admin');
         });
     }
 

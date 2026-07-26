@@ -5,35 +5,114 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
+use App\Models\Organizer;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    // 1. Fungsi menampilkan halaman view formulir login
-    public function showLogin() {
+    /**
+     * Menampilkan halaman login admin
+     */
+    public function showLogin()
+    {
         return view('auth.login');
     }
 
-    // 2. Fungsi memproses validasi Submit Log In
-    public function login(Request $request) {
+    /**
+     * Proses login admin
+     */
+    public function login(Request $request)
+    {
         $credentials = $request->validate([
-            'email' => ['required', 'email'],
+            'email'    => ['required', 'email'],
             'password' => ['required'],
         ]);
 
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
-            return redirect()->route('admin.dashboard'); 
+        if (!Auth::attempt($credentials, $request->boolean('remember'))) {
+            return back()
+                ->withErrors([
+                    'email' => 'Email atau password salah.',
+                ])
+                ->onlyInput('email');
         }
 
-        // Mengembalikan pesan error jika salah (Untuk Tugas No. 3)
-        return back()->with('error', 'Email atau Password yang Anda berikan tidak terdaftar di database kami.');
+        $request->session()->regenerate();
+
+        $user = Auth::user();
+
+        // Admin
+        if ($user->role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        }
+
+        // Organizer
+        if ($user->role === 'organizer') {
+
+            $organizer = Organizer::where('user_id', $user->id)->first();
+
+            if (!$organizer) {
+                Auth::logout();
+
+                return redirect()
+                    ->route('login')
+                    ->with('error', 'Data organizer tidak ditemukan.');
+            }
+
+            if ($organizer->status !== 'approved') {
+                Auth::logout();
+
+                return redirect()
+                    ->route('login')
+                    ->with('error', 'Akun organizer belum disetujui admin.');
+            }
+
+            return redirect()->route('organizer.dashboard');
+        }
+
+        Auth::logout();
+
+        return redirect()
+            ->route('admin.login')
+            ->with('error', 'Role tidak dikenali.');
     }
 
-    // 3. Fungsi memproses Log Out (Keluar)
-    public function logout(Request $request) {
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-        return redirect('/');
+    public function showRegister()
+    {
+        return view('auth.register');
+    }
+
+    public function register(Request $request)
+    {
+        $validated = $request->validate([
+            'organization_name' => 'required|string|max:255',
+            'contact_person'    => 'required|string|max:255',
+            'email'             => 'required|email|unique:users,email|unique:organizers,email',
+            'phone'             => 'required|string|max:20',
+            'address'           => 'nullable|string',
+            'password'          => 'required|confirmed|min:8',
+        ]);
+
+        // Simpan akun login
+        $user = User::create([
+            'name'     => $validated['contact_person'],
+            'email'    => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role'     => 'organizer',
+        ]);
+
+        // Simpan data organizer
+        Organizer::create([
+            'user_id'     => $user->id,
+            'name'        => $validated['organization_name'],
+            'email'       => $validated['email'],
+            'phone'       => $validated['phone'],
+            'description' => $validated['address'],
+            'status'      => 'pending',
+        ]);
+
+        return redirect()
+            ->route('login')
+            ->with('success', 'Registrasi berhasil. Silakan tunggu persetujuan admin.');
     }
 }

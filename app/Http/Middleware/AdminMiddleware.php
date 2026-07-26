@@ -11,13 +11,14 @@ class AdminMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        // Pastikan user sudah login DAN memiliki role admin
-        if (Auth::check() && Auth::user()->role === 'admin') {
+        if (!Auth::check()) {
+            return redirect()->route('admin.login');
+        }
+
+        if (Auth::user()->role === 'admin') {
             return $next($request);
         }
 
-        // Jika bukan admin / belum login, paksa logout dan tendang ke halaman login
-        Auth::logout();
-        return redirect()->route('admin.login')->with('error', 'Akses ditolak! Anda harus login sebagai Admin Penyelenggara.');
+        abort(403, 'Akses ditolak.');
     }
 }
