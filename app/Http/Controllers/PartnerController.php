@@ -27,12 +27,18 @@ class PartnerController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'logo_url' => 'nullable|string|max:255',
+            'logo' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:10240',
+            'logo_url' => 'nullable|string|max:1000',
         ]);
+
+        $logoUrl = $request->logo_url;
+        if ($request->hasFile('logo')) {
+            $logoUrl = \App\Services\CloudinaryService::upload($request->file('logo'), 'partners');
+        }
 
         Partner::create([
             'name' => $request->name,
-            'logo_url' => $request->logo_url,
+            'logo_url' => $logoUrl,
         ]);
 
         return redirect()
@@ -49,18 +55,27 @@ class PartnerController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'logo_url' => 'nullable|string|max:255',
+            'logo' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:10240',
+            'logo_url' => 'nullable|string|max:1000',
         ]);
+
+        $logoUrl = $partner->logo_url;
+        if ($request->hasFile('logo')) {
+            $logoUrl = \App\Services\CloudinaryService::upload($request->file('logo'), 'partners');
+        } elseif ($request->filled('logo_url')) {
+            $logoUrl = $request->logo_url;
+        }
 
         $partner->update([
             'name' => $request->name,
-            'logo_url' => $request->logo_url,
+            'logo_url' => $logoUrl,
         ]);
 
         return redirect()
             ->route('admin.partners.index')
             ->with('success', 'Partner berhasil diperbarui');
     }
+
 
     public function destroy(Partner $partner)
     {

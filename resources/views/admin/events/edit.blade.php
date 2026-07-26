@@ -114,11 +114,12 @@
 
                     @if ($event->poster_path)
                         <div class="mb-4">
-                            <img src="{{ asset('storage/' . $event->poster_path) }}"
+                            <img src="{{ $event->poster_url }}"
                                  alt="{{ $event->title }}"
                                  class="w-32 h-40 rounded-xl object-cover shadow-sm">
                         </div>
                     @endif
+
 
                     <input type="file"
                            name="poster"

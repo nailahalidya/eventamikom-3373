@@ -58,6 +58,23 @@ class Event extends Model
     }
 
     /**
+     * Accessor URL Poster (Cloudinary, External HTTP, atau Local Asset)
+     */
+    public function getPosterUrlAttribute()
+    {
+        if (!$this->poster_path) {
+            return asset('assets/concert.png');
+        }
+
+        if (\Illuminate\Support\Str::startsWith($this->poster_path, ['http://', 'https://'])) {
+            return $this->poster_path;
+        }
+
+        return asset('storage/' . $this->poster_path);
+    }
+
+
+    /**
      * Relasi ke Organizer
      */
     public function organizer()

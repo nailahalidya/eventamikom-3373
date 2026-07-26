@@ -102,11 +102,7 @@
                 <div>
                     <!-- Poster Image -->
                     <div class="relative aspect-[16/9] overflow-hidden">
-                        @if ($topEvent->poster_path)
-                            <img src="{{ asset('storage/' . $topEvent->poster_path) }}" alt="{{ $topEvent->title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                        @else
-                            <img src="{{ asset('assets/concert.png') }}" alt="{{ $topEvent->title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                        @endif
+                        <img src="{{ $topEvent->poster_url }}" alt="{{ $topEvent->title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                         
                         <!-- Top Rating Badge -->
                         <div class="absolute top-3 left-3 bg-slate-900/90 backdrop-blur-md text-amber-300 border border-amber-400/40 px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1.5 shadow-lg">
@@ -212,15 +208,9 @@
 
             <div class="relative overflow-hidden aspect-[3/4]">
 
-                @if ($event->poster_path)
-                <img src="{{ asset('storage/' . $event->poster_path) }}"
+                <img src="{{ $event->poster_url }}"
                     alt="{{ $event->title }}"
                     class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                @else
-                <img src="{{ asset('assets/concert.png') }}"
-                    alt="{{ $event->title }}"
-                    class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                @endif
 
                 <div
                     class="absolute top-4 left-4 px-3 py-1 bg-white/90 backdrop-blur rounded-lg text-xs font-bold uppercase text-indigo-600">

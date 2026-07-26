@@ -19,10 +19,24 @@ class Organizer extends Model
         'status',
     ];
 
+    public function getLogoUrlAttribute()
+    {
+        if (!$this->logo) {
+            return 'https://ui-avatars.com/api/?background=4f46e5&color=fff&name=' . urlencode($this->name);
+        }
+
+        if (\Illuminate\Support\Str::startsWith($this->logo, ['http://', 'https://'])) {
+            return $this->logo;
+        }
+
+        return asset('storage/' . $this->logo);
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id', 'id');
     }
+
 
     public function events()
     {

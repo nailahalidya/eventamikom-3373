@@ -64,15 +64,10 @@
                             </td>
 
                             <td class="px-8 py-6">
-                                @if ($event->poster_path)
-                                    <img src="{{ asset('storage/' . $event->poster_path) }}"
-                                         alt="{{ $event->title }}"
-                                         class="w-16 h-20 rounded-xl object-cover shadow-sm">
-                                @else
-                                    <div class="w-16 h-20 rounded-xl bg-slate-100 flex items-center justify-center text-xs text-slate-400">
-                                        No Image
-                                    </div>
-                                @endif
+                                <img src="{{ $event->poster_url }}"
+                                     alt="{{ $event->title }}"
+                                     class="w-16 h-20 rounded-xl object-cover shadow-sm">
+
                             </td>
 
                             <td class="px-8 py-6">

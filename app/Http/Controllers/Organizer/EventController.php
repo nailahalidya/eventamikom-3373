@@ -51,21 +51,18 @@ class EventController extends Controller
         ]);
 
         $data['owner_type'] = 'organizer';
-        $data['organizer_id'] = Auth::user()->organizer->id;
-
-        Event::create($data);
-        
-        if ($request->hasFile('poster')) {
-            $data['poster_path'] = $request->file('poster')->store('posters', 'public');
-        }
-
         $data['organizer_id'] = $organizer->id;
+
+        if ($request->hasFile('poster')) {
+            $data['poster_path'] = \App\Services\CloudinaryService::upload($request->file('poster'), 'posters');
+        }
 
         Event::create($data);
 
         return redirect()
             ->route('organizer.events.index')
             ->with('success', 'Event berhasil ditambahkan.');
+
     }
 
     public function edit(Event $event)
@@ -97,18 +94,17 @@ class EventController extends Controller
         ]);
 
         if ($request->hasFile('poster')) {
-
             if (
                 $event->poster_path &&
+                !\Illuminate\Support\Str::startsWith($event->poster_path, ['http://', 'https://']) &&
                 Storage::disk('public')->exists($event->poster_path)
             ) {
-
                 Storage::disk('public')->delete($event->poster_path);
             }
 
-            $data['poster_path'] = $request->file('poster')
-                ->store('posters', 'public');
+            $data['poster_path'] = \App\Services\CloudinaryService::upload($request->file('poster'), 'posters');
         }
+
 
         $event->update($data);
 

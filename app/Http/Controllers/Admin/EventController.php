@@ -46,7 +46,7 @@ class EventController extends Controller
         $data['owner_type'] = 'admin';
 
         if ($request->hasFile('poster')) {
-            $data['poster_path'] = $request->file('poster')->store('posters', 'public');
+            $data['poster_path'] = \App\Services\CloudinaryService::upload($request->file('poster'), 'posters');
         }
 
         Event::create($data);
@@ -84,12 +84,13 @@ class EventController extends Controller
         $data['owner_type'] = $event->owner_type ?? 'admin';
 
         if ($request->hasFile('poster')) {
-            if ($event->poster_path && Storage::disk('public')->exists($event->poster_path)) {
+            if ($event->poster_path && !\Illuminate\Support\Str::startsWith($event->poster_path, ['http://', 'https://']) && Storage::disk('public')->exists($event->poster_path)) {
                 Storage::disk('public')->delete($event->poster_path);
             }
 
-            $data['poster_path'] = $request->file('poster')->store('posters', 'public');
+            $data['poster_path'] = \App\Services\CloudinaryService::upload($request->file('poster'), 'posters');
         }
+
 
         $event->update($data);
 

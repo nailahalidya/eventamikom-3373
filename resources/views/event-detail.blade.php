@@ -8,15 +8,10 @@
 
         <div class="sticky top-32">
 
-            @if($event->poster_path)
             <img
-                src="{{ asset('storage/'.$event->poster_path) }}"
+                src="{{ $event->poster_url }}"
                 class="w-full rounded-[2.5rem] shadow-2xl border-8 border-white object-cover aspect-[3/4]">
-            @else
-            <img
-                src="{{ asset('assets/concert.png') }}"
-                class="w-full rounded-[2.5rem] shadow-2xl border-8 border-white object-cover aspect-[3/4]">
-            @endif
+
 
 
             <div class="mt-8 p-6 bg-white rounded-3xl shadow border">

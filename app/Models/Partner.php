@@ -13,4 +13,18 @@ class Partner extends Model
         'name',
         'logo_url',
     ];
+
+    public function getLogoUrlAttribute($value)
+    {
+        if (!$value) {
+            return null;
+        }
+
+        if (\Illuminate\Support\Str::startsWith($value, ['http://', 'https://'])) {
+            return $value;
+        }
+
+        return asset('storage/' . $value);
+    }
+
 }

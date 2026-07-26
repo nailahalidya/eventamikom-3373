@@ -50,11 +50,8 @@
             </div>
 
             <div class="flex gap-6 items-start">
-                @if($poster)
-                    <img src="{{ asset('storage/' . $poster) }}" alt="{{ $event->title }}" class="w-24 h-24 rounded-2xl object-cover shadow-sm">
-                @else
-                    <div class="w-24 h-24 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400 font-bold text-xs">No Image</div>
-                @endif
+                <img src="{{ $event->poster_url }}" alt="{{ $event->title }}" class="w-24 h-24 rounded-2xl object-cover shadow-sm">
+
 
                 <div class="flex-1">
                     <h4 class="font-extrabold text-lg text-slate-900 leading-tight">{{ $event->title }}</h4>
