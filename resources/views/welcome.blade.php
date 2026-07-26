@@ -40,7 +40,8 @@
             class="absolute -bottom-10 -right-10 w-64 h-64 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000">
         </div>
 
-        <img src="{{ asset('assets/concert.png') }}"
+        <!-- URL Cloudinary Langsung Dipasang -->
+        <img src="https://res.cloudinary.com/jy0bx3eb/image/upload/v1785082271/JTHyX1fhJzSbufNQbNux43v0KbgLk9xJPEvpKDse_fm2tzy.jpg"
             alt="Concert"
             class="rounded-[2rem] shadow-2xl relative z-10 w-full object-cover aspect-[4/5] object-center">
 
@@ -73,7 +74,6 @@
 <!-- Top Rated Events Section -->
 @if(isset($topRatedEvents) && $topRatedEvents->count() > 0)
 <section class="bg-gradient-to-b from-indigo-900 via-slate-900 to-slate-900 text-white py-16 px-8 my-12 rounded-[2.5rem] max-w-7xl mx-auto relative overflow-hidden shadow-2xl">
-    <!-- Background Glows -->
     <div class="absolute -top-24 -right-24 w-96 h-96 bg-amber-500/20 rounded-full blur-3xl pointer-events-none"></div>
     <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"></div>
 
@@ -100,11 +100,9 @@
             @endphp
             <div class="bg-white/10 backdrop-blur-xl border border-white/15 rounded-3xl overflow-hidden hover:border-amber-400/50 hover:shadow-2xl hover:shadow-amber-500/10 transition-all duration-300 flex flex-col justify-between group">
                 <div>
-                    <!-- Poster Image -->
                     <div class="relative aspect-[16/9] overflow-hidden">
                         <img src="{{ $topEvent->poster_url }}" alt="{{ $topEvent->title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                         
-                        <!-- Top Rating Badge -->
                         <div class="absolute top-3 left-3 bg-slate-900/90 backdrop-blur-md text-amber-300 border border-amber-400/40 px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1.5 shadow-lg">
                             <span>⭐</span> {{ $avgRating }} / 5.0
                         </div>
@@ -114,7 +112,6 @@
                         </div>
                     </div>
 
-                    <!-- Details -->
                     <div class="p-6">
                         <h3 class="text-xl font-black text-white mb-2 line-clamp-1 group-hover:text-amber-300 transition">
                             {{ $topEvent->title }}
@@ -144,7 +141,6 @@
                     </div>
                 </div>
 
-                <!-- Footer Price & Action -->
                 <div class="p-6 pt-4 flex items-center justify-between border-t border-white/10 mt-auto">
                     <div>
                         <span class="text-[10px] uppercase font-bold text-slate-400 block">Harga Tiket</span>
@@ -170,7 +166,6 @@
 
 <!-- Events Grid -->
 <section id="events" class="max-w-7xl mx-auto px-6 py-20">
-
 
     <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
         <div>
@@ -198,7 +193,6 @@
         </div>
     </div>
 
-
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
 
         @forelse($events as $event)
@@ -218,7 +212,6 @@
                 </div>
             </div>
 
-
             <div class="p-6">
 
                 <h3 class="text-xl font-bold mb-2 group-hover:text-indigo-600 transition">
@@ -232,20 +225,16 @@
                     </span>
 
                     <span class="font-semibold">
-
                         {{ number_format($event->reviews->avg('rating') ?? 0,1) }}
-
                     </span>
 
                     <span class="text-gray-500 text-sm">
-
                         ({{ $event->reviews->count() }} Review)
-
                     </span>
 
                 </div>
 
-                <div class="flex items-center gap-2 text-slate-500 text-sm mb-4">
+                <div class="flex items-center gap-2 text-slate-500 text-sm mb-4 mt-2">
                     <svg class="w-4 h-4"
                         fill="none"
                         stroke="currentColor"
@@ -285,7 +274,6 @@
                         <span>{{ $event->location }}</span>
 
                     </div>
-
 
                     <div class="flex items-center gap-2 text-sm">
 
@@ -354,7 +342,6 @@
     </div>
 
 </section>
-
 
 <!-- Partner Section -->
 <section class="max-w-7xl mx-auto px-6 py-20">
