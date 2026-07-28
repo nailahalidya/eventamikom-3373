@@ -36,6 +36,28 @@ class Event extends Model
     public function getCurrentPriceAttribute()
     {
         $now = now();
+
+        // Prefer explicit ticket tiers if any are defined for this event.
+        // Find first tier whose start_at <= now (or null) and end_at >= now (or null), ordered by priority.
+        try {
+            $tier = $this->tiers()
+                ->where(function ($q) use ($now) {
+                    $q->whereNull('start_at')->orWhere('start_at', '<=', $now);
+                })
+                ->where(function ($q) use ($now) {
+                    $q->whereNull('end_at')->orWhere('end_at', '>=', $now);
+                })
+                ->orderBy('priority', 'asc')
+                ->first();
+
+            if ($tier) {
+                return $tier->price;
+            }
+        } catch (\Throwable $e) {
+            // In case tiers table/migration not yet applied, fall back to legacy fields.
+        }
+
+        // Legacy single-tier fallback (kept for backward compatibility)
         if ($this->early_bird_until && $now->lte($this->early_bird_until) && !is_null($this->early_bird_price)) {
             return $this->early_bird_price;
         }
@@ -48,6 +70,27 @@ class Event extends Model
     public function getActiveTierNameAttribute()
     {
         $now = now();
+
+        // Check explicit tiers first
+        try {
+            $tier = $this->tiers()
+                ->where(function ($q) use ($now) {
+                    $q->whereNull('start_at')->orWhere('start_at', '<=', $now);
+                })
+                ->where(function ($q) use ($now) {
+                    $q->whereNull('end_at')->orWhere('end_at', '>=', $now);
+                })
+                ->orderBy('priority', 'asc')
+                ->first();
+
+            if ($tier) {
+                return $tier->name;
+            }
+        } catch (\Throwable $e) {
+            // ignore and fall back
+        }
+
+        // Legacy fallback
         if ($this->early_bird_until && $now->lte($this->early_bird_until) && !is_null($this->early_bird_price)) {
             return 'Early Bird';
         }
@@ -105,6 +148,15 @@ class Event extends Model
     {
         return $this->hasMany(Transaction::class);
     }
+
+    /**
+     * New: Ticket tiers (early bird, presale 1, presale 2, regular, ...)
+     */
+    public function tiers()
+    {
+        return $this->hasMany(TicketTier::class)->orderBy('priority', 'asc');
+    }
+
     public function certificates()
     {
         return $this->hasMany(Certificate::class);
