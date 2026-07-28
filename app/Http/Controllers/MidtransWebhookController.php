@@ -90,8 +90,7 @@ class MidtransWebhookController extends Controller
 
     private function processSuccess(Transaction $transaction)
     {
-        // Stok sudah ditahan saat checkout/pembuatan transaksi pending.
-        // Hanya kirim tiket, jangan mengurangi stok lagi.
+        $transaction->markCouponUsed();
         $transaction->sendTicket();
     }
 

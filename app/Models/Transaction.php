@@ -24,6 +24,10 @@ class Transaction extends Model
         'wa_reminder_sent_at',
         'expires_at',
         'is_stock_released',
+        'coupon_id',
+        'coupon_code',
+        'coupon_used_counted',
+        'ticket_tier_id',
         'ticket_sent',
     ];
 
@@ -32,6 +36,7 @@ class Transaction extends Model
         'wa_reminder_sent_at' => 'datetime',
         'expires_at' => 'datetime',
         'is_stock_released' => 'boolean',
+        'coupon_used_counted' => 'boolean',
         'ticket_sent' => 'boolean',
     ];
 
@@ -85,6 +90,14 @@ class Transaction extends Model
     }
 
     /**
+     * Coupon yang digunakan pada transaksi ini.
+     */
+    public function coupon()
+    {
+        return $this->belongsTo(\App\Models\Coupon::class);
+    }
+
+    /**
      * Relasi ke Review
      */
     public function review()
@@ -95,5 +108,18 @@ class Transaction extends Model
     public function organizer()
     {
         return $this->belongsTo(Organizer::class);
+    }
+
+    public function markCouponUsed(): bool
+    {
+        if ($this->coupon_id && !$this->coupon_used_counted && $this->coupon) {
+            $this->coupon->increment('used_count');
+            $this->coupon_used_counted = true;
+            $this->save();
+
+            return true;
+        }
+
+        return false;
     }
 }

@@ -96,15 +96,39 @@ class NewFeaturesTest extends TestCase
         $responseApi->assertJsonPath('success', true);
         $responseApi->assertJsonPath('discount', 25000); // 50% of 50000 Early Bird price
 
-        // Checkout Test
-        $this->post(route('checkout.store', $this->event->id), [
+        // Simulate checkout with applied coupon and pending transaction.
+        $transaction = Transaction::create([
+            'event_id' => $this->event->id,
+            'order_id' => 'TRX-COUPON-001',
             'customer_name' => 'Siti Nurhaliza',
             'customer_email' => 'siti@gmail.com',
             'customer_phone' => '08987654321',
+            'total_price' => 30000,
+            'status' => 'pending',
+            'snap_token' => null,
+            'qr_token' => 'QR-COUPON-001',
+            'expires_at' => now()->addMinutes(15),
+            'coupon_id' => $coupon->id,
             'coupon_code' => 'PROMO50',
         ]);
 
+        $this->assertEquals('pending', strtolower($transaction->status));
+        $this->assertEquals(0, $coupon->fresh()->used_count);
+
+        putenv('MIDTRANS_SERVER_KEY=test');
+        $signature = hash('sha512', $transaction->order_id . '200' . $transaction->total_price . 'test');
+
+        $callbackResponse = $this->postJson(route('midtrans.callback'), [
+            'order_id' => $transaction->order_id,
+            'transaction_status' => 'settlement',
+            'status_code' => '200',
+            'gross_amount' => $transaction->total_price,
+            'signature_key' => $signature,
+        ]);
+
+        $callbackResponse->assertStatus(200);
         $this->assertEquals(1, $coupon->fresh()->used_count);
+        $this->assertEquals('settlement', strtolower($transaction->fresh()->status));
     }
 
     /** @test */

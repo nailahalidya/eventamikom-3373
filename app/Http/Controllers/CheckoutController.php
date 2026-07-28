@@ -98,7 +98,7 @@ class CheckoutController extends Controller
         // --- BYPASS MIDTRANS UNTUK ACARA GRATIS / HARGA RP 0 ---
         if ($totalPrice == 0) {
             try {
-                $transaction = DB::transaction(function () use ($event, $orderId, $request, $qrToken) {
+                $transaction = DB::transaction(function () use ($event, $orderId, $request, $qrToken, $coupon, $selectedTier) {
                     $reserved = Event::where('id', $event->id)
                         ->where('stock', '>', 0)
                         ->decrement('stock');
@@ -116,6 +116,10 @@ class CheckoutController extends Controller
                         'total_price' => 0,
                         'status' => 'settlement',
                         'qr_token' => $qrToken,
+                        'coupon_id' => $coupon?->id,
+                        'coupon_code' => $coupon?->code,
+                        'coupon_used_counted' => (bool) $coupon,
+                        'ticket_tier_id' => $selectedTier?->id,
                     ]);
                 });
             } catch (\Exception $e) {
@@ -134,7 +138,7 @@ class CheckoutController extends Controller
 
         // --- TRANSAKSI BERBAYAR (MIDTRANS) ---
         try {
-            $transaction = DB::transaction(function () use ($event, $orderId, $request, $totalPrice, $qrToken) {
+            $transaction = DB::transaction(function () use ($event, $orderId, $request, $totalPrice, $qrToken, $coupon, $selectedTier) {
                 $reserved = Event::where('id', $event->id)
                     ->where('stock', '>', 0)
                     ->decrement('stock');
@@ -151,18 +155,18 @@ class CheckoutController extends Controller
                     'customer_phone' => $request->customer_phone,
                     'total_price' => $totalPrice,
                     'status' => 'pending',
+                    'snap_token' => null,
                     'qr_token' => $qrToken,
                     'expires_at' => now()->addMinutes(15),
+                    'coupon_id' => $coupon?->id,
+                    'coupon_code' => $coupon?->code,
+                    'ticket_tier_id' => $selectedTier?->id,
                 ]);
             });
         } catch (\Exception $e) {
             return back()
                 ->withInput()
                 ->with('error', 'Gagal memproses checkout: ' . $e->getMessage());
-        }
-
-        if ($coupon) {
-            $coupon->increment('used_count');
         }
 
         // Send Abandoned Cart Recovery (Payment Link via WA) immediately on creation
