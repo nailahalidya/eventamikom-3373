@@ -11,6 +11,7 @@ use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class CheckoutController extends Controller
@@ -37,6 +38,27 @@ class CheckoutController extends Controller
         }
 
         return view('checkout.create', compact('event', 'categories', 'ticketPrice', 'activeTier', 'tiers'));
+    }
+
+    protected function buildTransactionPayload(array $data, ?Coupon $coupon, ?\App\Models\TicketTier $selectedTier): array
+    {
+        if (Schema::hasColumn('transactions', 'coupon_id')) {
+            $data['coupon_id'] = $coupon?->id;
+        }
+
+        if (Schema::hasColumn('transactions', 'coupon_code')) {
+            $data['coupon_code'] = $coupon?->code;
+        }
+
+        if (Schema::hasColumn('transactions', 'coupon_used_counted')) {
+            $data['coupon_used_counted'] = (bool) $coupon;
+        }
+
+        if (Schema::hasColumn('transactions', 'ticket_tier_id')) {
+            $data['ticket_tier_id'] = $selectedTier?->id;
+        }
+
+        return $data;
     }
 
     public function store(Request $request, Event $event)
@@ -107,7 +129,7 @@ class CheckoutController extends Controller
                         throw new \Exception('Mohon maaf, tiket untuk acara ini sudah habis.');
                     }
 
-                    return Transaction::create([
+                    return Transaction::create($this->buildTransactionPayload([
                         'event_id' => $event->id,
                         'order_id' => $orderId,
                         'customer_name' => $request->customer_name,
@@ -116,11 +138,7 @@ class CheckoutController extends Controller
                         'total_price' => 0,
                         'status' => 'settlement',
                         'qr_token' => $qrToken,
-                        'coupon_id' => $coupon?->id,
-                        'coupon_code' => $coupon?->code,
-                        'coupon_used_counted' => (bool) $coupon,
-                        'ticket_tier_id' => $selectedTier?->id,
-                    ]);
+                    ], $coupon, $selectedTier));
                 });
             } catch (\Exception $e) {
                 return back()->withInput()->with('error', 'Gagal membuat transaksi: ' . $e->getMessage());
@@ -147,7 +165,7 @@ class CheckoutController extends Controller
                     throw new \Exception('Mohon maaf, tiket untuk acara ini sudah habis.');
                 }
 
-                return Transaction::create([
+                return Transaction::create($this->buildTransactionPayload([
                     'event_id' => $event->id,
                     'order_id' => $orderId,
                     'customer_name' => $request->customer_name,
@@ -158,10 +176,7 @@ class CheckoutController extends Controller
                     'snap_token' => null,
                     'qr_token' => $qrToken,
                     'expires_at' => now()->addMinutes(15),
-                    'coupon_id' => $coupon?->id,
-                    'coupon_code' => $coupon?->code,
-                    'ticket_tier_id' => $selectedTier?->id,
-                ]);
+                ], $coupon, $selectedTier));
             });
         } catch (\Exception $e) {
             return back()
