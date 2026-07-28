@@ -121,6 +121,7 @@
                 <!-- Ticket tiers management -->
                 <div class="col-span-2">
                     <label class="block text-sm font-bold text-slate-700 mb-4">Ticket Tiers (Early bird / Presale / Regular)</label>
+                    <input type="hidden" name="tiers_present" value="1">
 
                     <div id="tiers-container" class="space-y-4">
                         @foreach(old('tiers', []) as $tier)

@@ -69,7 +69,7 @@
                     </label>
                     <input type="date"
                            name="date"
-                           value="{{ old('date', $event->date) }}"
+                           value="{{ old('date', optional($event->date)->format('Y-m-d')) }}"
                            class="w-full px-5 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none"
                            required>
                 </div>
@@ -134,6 +134,7 @@
                 <!-- Ticket tiers management -->
                 <div class="col-span-2">
                     <label class="block text-sm font-bold text-slate-700 mb-4">Ticket Tiers (Early bird / Presale / Regular)</label>
+                    <input type="hidden" name="tiers_present" value="1">
 
                     @php
                         $oldTiers = old('tiers', []);

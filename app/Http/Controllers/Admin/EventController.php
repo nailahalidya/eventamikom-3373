@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Services\CloudinaryService;
 
 class EventController extends Controller
@@ -51,28 +52,30 @@ class EventController extends Controller
 
         // Admin selalu menjadi owner
         $data['owner_type'] = 'admin';
-
+ 
         if ($request->hasFile('poster')) {
             $data['poster_path'] = CloudinaryService::upload($request->file('poster'), 'posters');
         }
+ 
+        DB::transaction(function () use ($request, $data) {
+            $event = Event::create($data);
 
-        $event = Event::create($data);
-
-        // Handle tiers if provided
-        if ($request->filled('tiers')) {
-            foreach ($request->input('tiers') as $t) {
-                \App\Models\TicketTier::create([
-                    'event_id' => $event->id,
-                    'name' => $t['name'] ?? 'Tier',
-                    'price' => $t['price'] ?? 0,
-                    'start_at' => !empty($t['start_at']) ? \Carbon\Carbon::parse($t['start_at']) : null,
-                    'end_at' => !empty($t['end_at']) ? \Carbon\Carbon::parse($t['end_at']) : null,
-                    'priority' => isset($t['priority']) ? (int) $t['priority'] : 10,
-                    'stock' => isset($t['stock']) ? (int) $t['stock'] : null,
-                ]);
+            // Handle tiers if provided
+            if ($request->boolean('tiers_present') || $request->filled('tiers')) {
+                foreach ($request->input('tiers', []) as $t) {
+                    \App\Models\TicketTier::create([
+                        'event_id' => $event->id,
+                        'name' => $t['name'] ?? 'Tier',
+                        'price' => $t['price'] ?? 0,
+                        'start_at' => !empty($t['start_at']) ? \Carbon\Carbon::parse($t['start_at']) : null,
+                        'end_at' => !empty($t['end_at']) ? \Carbon\Carbon::parse($t['end_at']) : null,
+                        'priority' => isset($t['priority']) ? (int) $t['priority'] : 10,
+                        'stock' => isset($t['stock']) ? (int) $t['stock'] : null,
+                    ]);
+                }
             }
-        }
-
+        });
+ 
         return redirect()
             ->route('admin.events.index')
             ->with('success', 'Event berhasil ditambahkan.');
@@ -122,50 +125,52 @@ class EventController extends Controller
             $data['poster_path'] = CloudinaryService::upload($request->file('poster'), 'posters');
         }
 
-        $event->update($data);
+        DB::transaction(function () use ($request, $event, $data) {
+            $event->update($data);
 
-        // Handle tiers: create/update/delete based on input
-        if ($request->has('tiers')) {
-            $incoming = $request->input('tiers', []);
-            $existingIds = $event->tiers()->pluck('id')->toArray();
-            $keep = [];
+            // Handle tiers: create/update/delete based on input
+            if ($request->boolean('tiers_present') || $request->has('tiers')) {
+                $incoming = $request->input('tiers', []);
+                $existingIds = $event->tiers()->pluck('id')->toArray();
+                $keep = [];
 
-            foreach ($incoming as $t) {
-                if (!empty($t['id'])) {
-                    // Update existing
-                    $tier = \App\Models\TicketTier::find($t['id']);
-                    if ($tier && $tier->event_id == $event->id) {
-                        $tier->update([
-                            'name' => $t['name'] ?? $tier->name,
-                            'price' => $t['price'] ?? $tier->price,
+                foreach ($incoming as $t) {
+                    if (!empty($t['id'])) {
+                        // Update existing
+                        $tier = \App\Models\TicketTier::find($t['id']);
+                        if ($tier && $tier->event_id == $event->id) {
+                            $tier->update([
+                                'name' => $t['name'] ?? $tier->name,
+                                'price' => $t['price'] ?? $tier->price,
+                                'start_at' => !empty($t['start_at']) ? \Carbon\Carbon::parse($t['start_at']) : null,
+                                'end_at' => !empty($t['end_at']) ? \Carbon\Carbon::parse($t['end_at']) : null,
+                                'priority' => isset($t['priority']) ? (int) $t['priority'] : $tier->priority,
+                                'stock' => isset($t['stock']) ? (int) $t['stock'] : $tier->stock,
+                            ]);
+                            $keep[] = $tier->id;
+                        }
+                    } else {
+                        // Create new
+                        $new = \App\Models\TicketTier::create([
+                            'event_id' => $event->id,
+                            'name' => $t['name'] ?? 'Tier',
+                            'price' => $t['price'] ?? 0,
                             'start_at' => !empty($t['start_at']) ? \Carbon\Carbon::parse($t['start_at']) : null,
                             'end_at' => !empty($t['end_at']) ? \Carbon\Carbon::parse($t['end_at']) : null,
-                            'priority' => isset($t['priority']) ? (int) $t['priority'] : $tier->priority,
-                            'stock' => isset($t['stock']) ? (int) $t['stock'] : $tier->stock,
+                            'priority' => isset($t['priority']) ? (int) $t['priority'] : 10,
+                            'stock' => isset($t['stock']) ? (int) $t['stock'] : null,
                         ]);
-                        $keep[] = $tier->id;
+                        $keep[] = $new->id;
                     }
-                } else {
-                    // Create new
-                    $new = \App\Models\TicketTier::create([
-                        'event_id' => $event->id,
-                        'name' => $t['name'] ?? 'Tier',
-                        'price' => $t['price'] ?? 0,
-                        'start_at' => !empty($t['start_at']) ? \Carbon\Carbon::parse($t['start_at']) : null,
-                        'end_at' => !empty($t['end_at']) ? \Carbon\Carbon::parse($t['end_at']) : null,
-                        'priority' => isset($t['priority']) ? (int) $t['priority'] : 10,
-                        'stock' => isset($t['stock']) ? (int) $t['stock'] : null,
-                    ]);
-                    $keep[] = $new->id;
+                }
+
+                // Delete tiers not sent in incoming
+                $toDelete = array_diff($existingIds, $keep);
+                if (!empty($toDelete)) {
+                    \App\Models\TicketTier::whereIn('id', $toDelete)->delete();
                 }
             }
-
-            // Delete tiers not sent in incoming
-            $toDelete = array_diff($existingIds, $keep);
-            if (!empty($toDelete)) {
-                \App\Models\TicketTier::whereIn('id', $toDelete)->delete();
-            }
-        }
+        });
 
         return redirect()
             ->route('admin.events.index')
