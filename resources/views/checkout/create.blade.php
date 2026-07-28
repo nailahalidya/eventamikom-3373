@@ -5,6 +5,7 @@
     $poster = $event->poster_path ?? $event->poster ?? null;
     $currentPrice = $event->current_price;
     $tierName = $event->active_tier_name;
+    $availableTiers = $tiers ?? collect();
 @endphp
 
 <main class="max-w-3xl mx-auto px-6 py-20">
@@ -58,13 +59,35 @@
                     <p class="text-slate-500 text-sm mt-1">
                         {{ $event->date ? \Carbon\Carbon::parse($event->date)->format('d M Y, H:i') : '' }} • {{ $event->location }}
                     </p>
-                    <p class="text-indigo-600 font-black mt-2 text-lg">
-                        @if($currentPrice == 0)
-                            <span class="text-emerald-600 uppercase font-black">Gratis</span>
-                        @else
-                            1 x Rp {{ number_format($currentPrice, 0, ',', '.') }}
-                        @endif
-                    </p>
+
+                    {{-- Tier selection (if available) --}}
+                    @if($availableTiers->isNotEmpty())
+                        <div class="mt-3">
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-2">Pilih Tipe Tiket</label>
+                            <div class="space-y-2">
+                                @foreach($availableTiers as $t)
+                                    <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-slate-50">
+                                        <input type="radio" name="tier_id" value="{{ $t->id }}" data-price="{{ $t->price }}" {{ $loop->first ? 'checked' : '' }}>
+                                        <div class="flex-1">
+                                            <div class="flex justify-between items-center">
+                                                <div class="font-extrabold">{{ $t->name }}</div>
+                                                <div class="text-sm text-slate-500">{{ $t->stock ?? 0 }} tersisa</div>
+                                            </div>
+                                            <div class="text-indigo-600 font-black mt-1">Rp {{ number_format($t->price,0,',','.') }}</div>
+                                        </div>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
+                    @else
+                        <p class="text-indigo-600 font-black mt-2 text-lg">
+                            @if($currentPrice == 0)
+                                <span class="text-emerald-600 uppercase font-black">Gratis</span>
+                            @else
+                                1 x Rp {{ number_format($currentPrice, 0, ',', '.') }}
+                            @endif
+                        </p>
+                    @endif
                 </div>
             </div>
 
@@ -116,6 +139,7 @@
             <form action="{{ route('checkout.store', $event->id) }}" method="POST" class="space-y-6">
                 @csrf
                 <input type="hidden" name="coupon_code" id="form-coupon-code">
+                <input type="hidden" name="tier_id" id="form-tier-id" value="{{ optional($availableTiers->first())->id }}">
 
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-2">Nama Lengkap</label>
@@ -210,5 +234,25 @@
             feedback.innerText = "Gagal memproses kupon.";
         });
     }
+
+    // Update selected tier hidden input and visible price when radio changes
+    document.addEventListener('change', function (e) {
+        if (e.target && e.target.name === 'tier_id') {
+            const price = parseFloat(e.target.getAttribute('data-price') || 0);
+            document.getElementById('form-tier-id').value = e.target.value;
+            document.getElementById('label-ticket-price').innerText = price === 0 ? 'Rp 0 (Gratis)' : 'Rp ' + new Intl.NumberFormat('id-ID').format(price);
+
+            // Reset coupon feedback when tier changes
+            const feedback = document.getElementById('coupon-feedback');
+            if (feedback) {
+                feedback.className = 'mt-2 text-xs font-bold hidden';
+                feedback.innerText = '';
+            }
+
+            // Reset discount row
+            const rowDiscount = document.getElementById('row-discount');
+            if (rowDiscount) rowDiscount.classList.add('hidden');
+        }
+    });
 </script>
 @endsection

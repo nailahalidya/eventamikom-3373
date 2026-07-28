@@ -20,7 +20,22 @@ class CheckoutController extends Controller
         $ticketPrice = $event->current_price;
         $activeTier = $event->active_tier_name;
 
-        return view('checkout.create', compact('event', 'categories', 'ticketPrice', 'activeTier'));
+        // Load available tiers (those active by date) to show to user
+        try {
+            $now = now();
+            $tiers = $event->tiers()
+                ->where(function ($q) use ($now) {
+                    $q->whereNull('start_at')->orWhere('start_at', '<=', $now);
+                })
+                ->where(function ($q) use ($now) {
+                    $q->whereNull('end_at')->orWhere('end_at', '>=', $now);
+                })
+                ->get();
+        } catch (\Throwable $e) {
+            $tiers = collect();
+        }
+
+        return view('checkout.create', compact('event', 'categories', 'ticketPrice', 'activeTier', 'tiers'));
     }
 
     public function store(Request $request, Event $event)

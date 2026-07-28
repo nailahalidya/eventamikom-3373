@@ -16,12 +16,14 @@ class TicketTier extends Model
         'start_at',
         'end_at',
         'priority',
+        'stock',
     ];
 
     protected $casts = [
         'start_at' => 'datetime',
         'end_at' => 'datetime',
         'price' => 'decimal:2',
+        'stock' => 'integer',
     ];
 
     public function event()
