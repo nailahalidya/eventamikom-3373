@@ -90,13 +90,16 @@
 
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Target Ticket Tier (Opsional)</label>
-                    <select name="ticket_tier_id" id="coupon-tier-select" class="w-full px-3 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-700 outline-none">
-                        <option value="">Tidak menargetkan tier</option>
-                        @foreach($tiers as $t)
-                            <option value="{{ $t->id }}" data-event-id="{{ $t->event_id }}">{{ $t->event->title ?? 'Event' }} — {{ $t->name }} — Rp {{ number_format($t->price,0,',','.') }}</option>
-                        @endforeach
+                    <select name="ticket_tier_ids[]" id="coupon-tier-select" multiple class="w-full px-3 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-700 outline-none">
+                        @if($tiers->isNotEmpty())
+                            @foreach($tiers as $t)
+                                <option value="{{ $t->id }}" data-event-id="{{ $t->event_id }}">{{ $t->event->title ?? 'Event' }} — {{ $t->name }} — Rp {{ number_format($t->price,0,',','.') }}</option>
+                            @endforeach
+                        @else
+                            <option disabled>Tidak ada tier tersedia</option>
+                        @endif
                     </select>
-                    <p class="text-xs text-slate-400 mt-2">Pilih tier jika kupon ini hanya berlaku untuk tier tertentu (override harga tier).</p>
+                    <p class="text-xs text-slate-400 mt-2">Pilih satu atau beberapa tier jika kupon ini hanya berlaku untuk tier tertentu. Kosong = berlaku untuk semua tier.</p>
                 </div>
 
                 <button type="submit" class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-sm shadow-lg shadow-indigo-200 transition">
@@ -143,6 +146,11 @@
                                 </td>
                                 <td class="px-6 py-4 text-xs font-semibold text-slate-600">
                                     {{ $c->event->title ?? 'Semua Event' }}
+                                    @if($c->ticketTiers && $c->ticketTiers->isNotEmpty())
+                                        <div class="text-[11px] text-slate-400 mt-1">
+                                            Target tier: {{ $c->ticketTiers->map(function($t){ return $t->name . ' ('. number_format($t->price,0,',','.').')'; })->join(', ') }}
+                                        </div>
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4 text-xs text-slate-500 font-medium">
                                     {{ $c->expires_at ? $c->expires_at->format('d M Y') : 'Tanpa Batas' }}

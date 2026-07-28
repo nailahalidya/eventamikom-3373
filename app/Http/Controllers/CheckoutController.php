@@ -45,6 +45,7 @@ class CheckoutController extends Controller
             'customer_email' => 'required|email|max:255',
             'customer_phone' => 'required|string|max:20',
             'coupon_code' => 'nullable|string',
+            'tier_id' => 'nullable|integer|exists:ticket_tiers,id',
         ]);
 
         if ($event->stock <= 0) {
@@ -53,14 +54,34 @@ class CheckoutController extends Controller
                 ->with('error', 'Mohon maaf, tiket untuk acara ini sudah habis.');
         }
 
+        // Determine base price from selected tier if provided
         $basePrice = $event->current_price;
+        $selectedTier = null;
+        if ($request->filled('tier_id')) {
+            $selectedTier = \App\Models\TicketTier::find($request->tier_id);
+            if ($selectedTier) {
+                $basePrice = $selectedTier->price;
+            }
+        }
+
         $discount = 0;
         $coupon = null;
 
         if ($request->filled('coupon_code')) {
             $coupon = Coupon::where('code', strtoupper($request->coupon_code))->first();
             if ($coupon && $coupon->isValidForEvent($event->id)) {
-                $discount = $coupon->calculateDiscount($basePrice);
+                // If coupon targets specific tiers, ensure it applies to the selected tier
+                if ($coupon->ticketTiers()->exists()) {
+                    if ($selectedTier && $coupon->ticketTiers->contains($selectedTier)) {
+                        $discount = $coupon->calculateDiscount($basePrice);
+                    } else {
+                        // coupon does not apply to selected tier
+                        $coupon = null;
+                    }
+                } else {
+                    // coupon global for event or all events
+                    $discount = $coupon->calculateDiscount($basePrice);
+                }
             }
         }
 
@@ -244,6 +265,7 @@ class CheckoutController extends Controller
         $request->validate([
             'code' => 'required|string',
             'event_id' => 'required|integer',
+            'tier_id' => 'nullable|integer|exists:ticket_tiers,id',
         ]);
 
         $event = Event::findOrFail($request->event_id);
@@ -257,7 +279,25 @@ class CheckoutController extends Controller
             return response()->json(['success' => false, 'message' => 'Kode kupon tidak berlaku atau sudah kadaluarsa.'], 200);
         }
 
+        // Determine base price from selected tier if provided
         $basePrice = $event->current_price;
+        if ($request->filled('tier_id')) {
+            $tier = \App\Models\TicketTier::find($request->tier_id);
+            if ($tier) $basePrice = $tier->price;
+        }
+
+        // If coupon targets tiers, make sure it applies to selected tier
+        if ($coupon->ticketTiers()->exists()) {
+            if ($request->filled('tier_id')) {
+                if (! $coupon->ticketTiers->pluck('id')->contains($request->tier_id)) {
+                    return response()->json(['success' => false, 'message' => 'Kupon ini tidak berlaku untuk tier tiket yang dipilih.'], 200);
+                }
+            } else {
+                // coupon requires a tier but none was selected
+                return response()->json(['success' => false, 'message' => 'Kupon ini hanya berlaku untuk tier tertentu. Silakan pilih tier tiket.'], 200);
+            }
+        }
+
         $discount = $coupon->calculateDiscount($basePrice);
         $finalTicketPrice = max(0, $basePrice - $discount);
         $adminFee = ($basePrice == 0 || $finalTicketPrice == 0) ? 0 : 5000;

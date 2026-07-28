@@ -201,7 +201,11 @@
             },
             body: JSON.stringify({
                 code: code,
-                event_id: {{ $event->id }}
+                event_id: {{ $event->id }},
+                tier_id: (function(){
+                    const el = document.querySelector('input[name="tier_id"]:checked');
+                    return el ? el.value : null;
+                })()
             })
         })
         .then(res => res.json())

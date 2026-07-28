@@ -31,6 +31,14 @@ class Coupon extends Model
         return $this->belongsTo(\App\Models\TicketTier::class, 'ticket_tier_id');
     }
 
+    /**
+     * New: many-to-many relation so a coupon can target multiple ticket tiers.
+     */
+    public function ticketTiers()
+    {
+        return $this->belongsToMany(\App\Models\TicketTier::class, 'coupon_ticket_tier');
+    }
+
     public function event()
     {
         return $this->belongsTo(Event::class);
