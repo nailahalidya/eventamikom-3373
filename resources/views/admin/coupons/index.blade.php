@@ -206,7 +206,7 @@
                                     <div class="font-semibold text-slate-900 line-clamp-2" title="{{ $c->event->title ?? 'Semua Event' }}">
                                         {{ $c->event->title ?? 'Semua Event' }}
                                     </div>
-                                    @if($c->ticketTiers && $c->ticketTiers->isNotEmpty())
+                                    @if(\Illuminate\Support\Facades\Schema::hasTable('coupon_ticket_tier') && $c->ticketTiers && $c->ticketTiers->isNotEmpty())
                                         <div class="mt-2 text-xs text-slate-500">
                                             Tier: {{ $c->ticketTiers->pluck('name')->join(', ') }}
                                         </div>

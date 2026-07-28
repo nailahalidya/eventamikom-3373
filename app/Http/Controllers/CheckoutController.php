@@ -93,18 +93,13 @@ class CheckoutController extends Controller
         if ($request->filled('coupon_code')) {
             $coupon = Coupon::where('code', strtoupper($request->coupon_code))->first();
             if ($coupon && $coupon->isValidForEvent($event->id)) {
-                // If coupon targets specific tiers, ensure it applies to the selected tier
-                if ($coupon->ticketTiers()->exists()) {
-                    if ($selectedTier && $coupon->ticketTiers->contains($selectedTier)) {
-                        $discount = $coupon->calculateDiscount($basePrice);
-                    } else {
-                        // coupon does not apply to selected tier
-                        $coupon = null;
-                    }
-                } else {
-                    // coupon global for event or all events
-                    $discount = $coupon->calculateDiscount($basePrice);
+                if (! $coupon->appliesToTicketTier($selectedTier)) {
+                    return back()
+                        ->withInput()
+                        ->with('error', 'Kupon ini tidak berlaku untuk jenis tiket yang dipilih.');
                 }
+
+                $discount = $coupon->calculateDiscount($basePrice);
             }
         }
 

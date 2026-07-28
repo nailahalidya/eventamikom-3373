@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Schema;
 
 class Coupon extends Model
 {
@@ -44,6 +45,56 @@ class Coupon extends Model
     public function event()
     {
         return $this->belongsTo(Event::class);
+    }
+
+    protected static function hasTicketTierPivotTable(): bool
+    {
+        return Schema::hasTable('coupon_ticket_tier');
+    }
+
+    public function isTierRestricted(): bool
+    {
+        if ($this->ticket_tier_id) {
+            return true;
+        }
+
+        if (!static::hasTicketTierPivotTable()) {
+            return false;
+        }
+
+        return $this->ticketTiers()->exists();
+    }
+
+    public function allowedTierIds(): array
+    {
+        $ids = [];
+
+        if (static::hasTicketTierPivotTable()) {
+            $ids = $this->ticketTiers->pluck('id')->toArray();
+        }
+
+        if ($this->ticket_tier_id) {
+            $ids[] = $this->ticket_tier_id;
+        }
+
+        return collect($ids)
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    public function appliesToTicketTier(?\App\Models\TicketTier $tier): bool
+    {
+        if (!$this->isTierRestricted()) {
+            return true;
+        }
+
+        if (!$tier) {
+            return false;
+        }
+
+        return in_array($tier->id, $this->allowedTierIds(), true);
     }
 
     public function isValidForEvent($eventId)

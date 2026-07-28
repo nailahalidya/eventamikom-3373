@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Coupon;
 use App\Models\Event;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 class CouponController extends Controller
 {
@@ -32,25 +33,33 @@ class CouponController extends Controller
             'ticket_tier_ids.*' => 'nullable|exists:ticket_tiers,id',
         ]);
 
-        $coupon = Coupon::create([
+        $couponData = [
             'code' => strtoupper(trim($request->code)),
             'type' => $request->type,
             'discount_amount' => $request->discount_amount,
             'max_uses' => $request->max_uses,
-            'starts_at' => $request->starts_at ? \Carbon\Carbon::parse($request->starts_at)->startOfDay() : null,
-            'expires_at' => $request->expires_at ? \Carbon\Carbon::parse($request->expires_at)->endOfDay() : null,
             'event_id' => $request->event_id,
-            // keep ticket_tier_id for backward compatibility but prefer ticket_tier_ids pivot
-            'ticket_tier_id' => $request->ticket_tier_id ?? null,
             'is_active' => true,
-        ]);
+        ];
 
-        // Sync many-to-many ticket tiers if provided
-        if ($request->filled('ticket_tier_ids')) {
-            $coupon->ticketTiers()->sync($request->ticket_tier_ids);
-        } else {
-            // if form submitted with single ticket_tier_id (backwards compatibility), sync that single id
-            if ($request->filled('ticket_tier_id')) {
+        if (Schema::hasColumn('coupons', 'starts_at')) {
+            $couponData['starts_at'] = $request->starts_at ? \Carbon\Carbon::parse($request->starts_at)->startOfDay() : null;
+        }
+
+        if (Schema::hasColumn('coupons', 'expires_at')) {
+            $couponData['expires_at'] = $request->expires_at ? \Carbon\Carbon::parse($request->expires_at)->endOfDay() : null;
+        }
+
+        if (Schema::hasColumn('coupons', 'ticket_tier_id')) {
+            $couponData['ticket_tier_id'] = $request->ticket_tier_id ?? null;
+        }
+
+        $coupon = Coupon::create($couponData);
+
+        if (Schema::hasTable('coupon_ticket_tier')) {
+            if ($request->filled('ticket_tier_ids')) {
+                $coupon->ticketTiers()->sync($request->ticket_tier_ids);
+            } elseif ($request->filled('ticket_tier_id')) {
                 $coupon->ticketTiers()->sync([$request->ticket_tier_id]);
             }
         }
