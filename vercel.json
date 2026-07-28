@@ -34,6 +34,7 @@
         "APP_ENV": "production",
         "APP_DEBUG": "true",
         "APP_URL": "https://eventamikom-3373.vercel.app",
+        "GOOGLE_REDIRECT_URI": "https://eventamikom-3373.vercel.app/auth/google/callback",
  
         "APP_CONFIG_CACHE": "/tmp/config.php",
         "APP_EVENTS_CACHE": "/tmp/events.php",
