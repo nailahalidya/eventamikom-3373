@@ -25,6 +25,7 @@ class CouponController extends Controller
             'type' => 'required|in:fixed,percent',
             'discount_amount' => 'required|numeric|min:1',
             'max_uses' => 'nullable|integer|min:1',
+            'starts_at' => 'nullable|date',
             'expires_at' => 'nullable|date',
             'event_id' => 'nullable|exists:events,id',
             'ticket_tier_ids' => 'nullable|array',
@@ -36,6 +37,7 @@ class CouponController extends Controller
             'type' => $request->type,
             'discount_amount' => $request->discount_amount,
             'max_uses' => $request->max_uses,
+            'starts_at' => $request->starts_at ? \Carbon\Carbon::parse($request->starts_at)->startOfDay() : null,
             'expires_at' => $request->expires_at ? \Carbon\Carbon::parse($request->expires_at)->endOfDay() : null,
             'event_id' => $request->event_id,
             // keep ticket_tier_id for backward compatibility but prefer ticket_tier_ids pivot

@@ -72,6 +72,14 @@
                     </div>
 
                     <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Mulai Berlaku</label>
+                        <input type="date" name="starts_at"
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-medium">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-3 mt-3">
+                    <div>
                         <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Kadaluarsa</label>
                         <input type="date" name="expires_at"
                             class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-medium">
@@ -86,6 +94,7 @@
                             <option value="{{ $ev->id }}">{{ $ev->title }}</option>
                         @endforeach
                     </select>
+                    <p class="text-xs text-slate-400 mt-2">Pilih event agar daftar tier di bawah terfilter hanya untuk event tersebut.</p>
                 </div>
 
                 <div>
@@ -93,13 +102,39 @@
                     <select name="ticket_tier_ids[]" id="coupon-tier-select" multiple class="w-full px-3 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-700 outline-none">
                         @if($tiers->isNotEmpty())
                             @foreach($tiers as $t)
-                                <option value="{{ $t->id }}" data-event-id="{{ $t->event_id }}">{{ $t->event->title ?? 'Event' }} — {{ $t->name }} — Rp {{ number_format($t->price,0,',','.') }}</option>
+                                <option value="{{ $t->id }}" data-event-id="{{ $t->event_id }}">{{ $t->event->title ?? 'Event' }} — {{ $t->name }} — Rp {{ number_format($t->price,0,',','.') }} @if($t->start_at || $t->end_at) ({{ $t->start_at?->format('d M Y') ?? '–' }} - {{ $t->end_at?->format('d M Y') ?? '–' }})@endif</option>
                             @endforeach
                         @else
                             <option disabled>Tidak ada tier tersedia</option>
                         @endif
                     </select>
                     <p class="text-xs text-slate-400 mt-2">Pilih satu atau beberapa tier jika kupon ini hanya berlaku untuk tier tertentu. Kosong = berlaku untuk semua tier.</p>
+
+                    <script>
+                        (function(){
+                            const eventSelect = document.getElementById('coupon-event-select');
+                            const tierSelect = document.getElementById('coupon-tier-select');
+
+                            function filterTiers(){
+                                const selectedEvent = eventSelect.value;
+                                for (const opt of tierSelect.options) {
+                                    const ev = opt.dataset.eventId;
+                                    if (!selectedEvent) {
+                                        opt.style.display = ''; // show all
+                                    } else {
+                                        if (ev === selectedEvent) opt.style.display = '';
+                                        else opt.style.display = 'none';
+                                    }
+                                }
+                            }
+
+                            if(eventSelect && tierSelect){
+                                eventSelect.addEventListener('change', filterTiers);
+                                // run on load
+                                filterTiers();
+                            }
+                        })();
+                    </script>
                 </div>
 
                 <button type="submit" class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-sm shadow-lg shadow-indigo-200 transition">

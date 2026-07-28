@@ -15,6 +15,7 @@ class Coupon extends Model
         'discount_amount',
         'max_uses',
         'used_count',
+        'starts_at',
         'expires_at',
         'event_id',
         'ticket_tier_id',
@@ -22,6 +23,7 @@ class Coupon extends Model
     ];
 
     protected $casts = [
+        'starts_at' => 'datetime',
         'expires_at' => 'datetime',
         'is_active' => 'boolean',
     ];
@@ -47,6 +49,8 @@ class Coupon extends Model
     public function isValidForEvent($eventId)
     {
         if (!$this->is_active) return false;
+        // check starts_at (if set) and expires_at
+        if ($this->starts_at && now()->lt($this->starts_at)) return false;
         if ($this->expires_at && now()->gt($this->expires_at)) return false;
         if ($this->max_uses && $this->used_count >= $this->max_uses) return false;
         if ($this->event_id && $this->event_id != $eventId) return false;
