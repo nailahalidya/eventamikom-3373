@@ -181,12 +181,21 @@
 
     </div>
 
-    <a href="{{ route('admin.organizers.index') }}"
-        class="inline-flex items-center px-5 py-3 bg-indigo-700 text-white rounded-xl hover:bg-indigo-800">
+    <div class="flex items-center gap-3">
+        <a href="{{ route('admin.organizers.index') }}"
+            class="inline-flex items-center px-5 py-3 bg-indigo-700 text-white rounded-xl hover:bg-indigo-800">
+            ← Kembali
+        </a>
 
-        ← Kembali
-
-    </a>
+        <form action="{{ route('admin.organizers.destroy', $organizer) }}" method="POST">
+            @csrf
+            @method('DELETE')
+            <button onclick="return confirm('Apakah Anda yakin ingin menghapus organizer ini?')"
+                class="inline-flex items-center px-5 py-3 bg-red-600 text-white font-medium rounded-xl hover:bg-red-700 transition">
+                🗑 Hapus Organizer
+            </button>
+        </form>
+    </div>
 
 </div>
 

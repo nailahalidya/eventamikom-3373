@@ -207,7 +207,7 @@ Route::prefix('admin')
             ->name('transactions.destroy');
 
         Route::resource('organizers', OrganizerController::class)
-            ->only(['index', 'show']);
+            ->only(['index', 'show', 'destroy']);
 
         Route::patch('/organizers/{organizer}/approve', [OrganizerController::class, 'approve'])
             ->name('organizers.approve');

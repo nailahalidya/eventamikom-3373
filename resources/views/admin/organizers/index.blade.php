@@ -154,6 +154,17 @@
 
                                 @endif
 
+                                <form action="{{ route('admin.organizers.destroy', $organizer) }}"
+                                    method="POST">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button
+                                        onclick="return confirm('Apakah Anda yakin ingin menghapus organizer ini?')"
+                                        class="px-3 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition">
+                                        Hapus
+                                    </button>
+                                </form>
+
                             </div>
 
                         </td>

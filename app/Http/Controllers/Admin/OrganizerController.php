@@ -50,4 +50,20 @@ class OrganizerController extends Controller
             ->route('admin.organizers.index')
             ->with('success', 'Organizer berhasil ditolak.');
     }
+
+    /**
+     * Hapus data organizer.
+     */
+    public function destroy(Organizer $organizer)
+    {
+        if ($organizer->logo && !\Illuminate\Support\Str::startsWith($organizer->logo, ['http://', 'https://'])) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($organizer->logo);
+        }
+
+        $organizer->delete();
+
+        return redirect()
+            ->route('admin.organizers.index')
+            ->with('success', 'Data organizer berhasil dihapus.');
+    }
 }
