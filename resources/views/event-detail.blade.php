@@ -15,33 +15,48 @@
 
 
             <div class="mt-8 p-6 bg-white rounded-3xl shadow border">
+                <h4 class="font-bold mb-4">Penyelenggara</h4>
 
-                <h4 class="font-bold mb-4">
-                    Penyelenggara
-                </h4>
-
+                @if($event->organizer)
                 <div class="flex items-center gap-4">
-
-                    <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center font-bold text-indigo-600">
+                    <img src="{{ $event->organizer->logo_url }}" alt="{{ $event->organizer->name }}" class="w-12 h-12 rounded-2xl object-cover border">
+                    <div>
+                        <p class="font-bold text-slate-800">{{ $event->organizer->name }}</p>
+                        <p class="text-xs text-indigo-600 font-semibold">Verified Organizer</p>
+                    </div>
+                </div>
+                @if($event->organizer->description)
+                <p class="text-xs text-slate-500 mt-4 leading-relaxed line-clamp-3">
+                    {{ $event->organizer->description }}
+                </p>
+                @endif
+                @if($event->organizer->email || $event->organizer->phone)
+                <div class="mt-4 pt-4 border-t border-slate-100 space-y-1.5 text-xs text-slate-500">
+                    @if($event->organizer->email)
+                    <div class="flex items-center gap-2">
+                        <span>📧</span> <span>{{ $event->organizer->email }}</span>
+                    </div>
+                    @endif
+                    @if($event->organizer->phone)
+                    <div class="flex items-center gap-2">
+                        <span>📞</span> <span>{{ $event->organizer->phone }}</span>
+                    </div>
+                    @endif
+                </div>
+                @endif
+                @else
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-black text-xl">
                         AH
                     </div>
-
                     <div>
-                        <p class="font-bold">
-                            AmikomEventHub
-                        </p>
-
-                        <p class="text-xs text-slate-500">
-                            Verified Organizer
-                        </p>
+                        <p class="font-bold text-slate-800">AmikomEventHub</p>
+                        <p class="text-xs text-indigo-600 font-semibold">Official Admin</p>
                     </div>
-
                 </div>
-
+                @endif
             </div>
-
         </div>
-
     </div>
 
 

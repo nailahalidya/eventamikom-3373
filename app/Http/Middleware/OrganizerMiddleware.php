@@ -12,7 +12,7 @@ class OrganizerMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         if (!Auth::check()) {
-            return redirect()->route('admin.login');
+            return redirect()->route('login');
         }
 
         $user = Auth::user();

@@ -14,19 +14,10 @@ class HomeController extends Controller
         $categories = Category::latest()->get();
         $events = Event::with(['category', 'reviews'])->latest()->get();
 
-        $topRatedEvents = Event::with(['category', 'organizer', 'reviews'])
-            ->withAvg('reviews', 'rating')
-            ->withCount('reviews')
-            ->orderByDesc('reviews_avg_rating')
-            ->orderByDesc('reviews_count')
-            ->take(3)
-            ->get();
-
         return view('welcome', compact(
             'partners',
             'categories',
-            'events',
-            'topRatedEvents'
+            'events'
         ));
     }
 
@@ -40,19 +31,10 @@ class HomeController extends Controller
             ->latest()
             ->get();
 
-        $topRatedEvents = Event::with(['category', 'organizer', 'reviews'])
-            ->withAvg('reviews', 'rating')
-            ->withCount('reviews')
-            ->orderByDesc('reviews_avg_rating')
-            ->orderByDesc('reviews_count')
-            ->take(3)
-            ->get();
-
         return view('welcome', compact(
             'categories',
             'partners',
-            'events',
-            'topRatedEvents'
+            'events'
         ));
     }
 

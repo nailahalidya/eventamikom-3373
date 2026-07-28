@@ -244,6 +244,4 @@ Route::prefix('organizer')
 
         Route::resource('transaction', OrganizerTransactionController::class)
             ->only(['index', 'show']);
-
-        Route::resource('transaction', TransactionController::class);
     });

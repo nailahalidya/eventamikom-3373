@@ -115,4 +115,17 @@ class AuthController extends Controller
             ->route('login')
             ->with('success', 'Registrasi berhasil. Silakan tunggu persetujuan admin.');
     }
+
+    /**
+     * Proses logout admin/organizer
+     */
+    public function logout(Request $request)
+    {
+        Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login');
+    }
 }

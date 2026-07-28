@@ -303,19 +303,13 @@
 
                 <ul class="space-y-4 text-sm">
 
-                    @foreach (\App\Models\Category::all() as $cat)
-
+                    @foreach ($globalCategories ?? $categories ?? [] as $cat)
                     <li>
-
-                        <a href="{{ url('/?category=' . $cat->slug) }}#events"
+                        <a href="{{ url('/category/' . $cat->id) }}"
                             class="hover:text-white transition text-indigo-300">
-
                             {{ $cat->name }}
-
                         </a>
-
                     </li>
-
                     @endforeach
 
                 </ul>

@@ -135,6 +135,9 @@ class CheckoutController extends Controller
                     'name' => Str::limit($event->title, 45),
                 ],
             ],
+            'callbacks' => [
+                'finish' => route('checkout.success', $orderId),
+            ],
         ];
 
         if ($adminFee > 0) {

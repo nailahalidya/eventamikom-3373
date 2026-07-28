@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Event;
-use App\Models\Tenant;
 
 
 class EventController extends Controller
@@ -13,6 +12,7 @@ class EventController extends Controller
     {
         $event = Event::with([
             'category',
+            'organizer',
             'reviews.user'
         ])->findOrFail($id);
 
@@ -28,10 +28,5 @@ class EventController extends Controller
             'reviews',
             'averageRating'
         ));
-
-        $events = Event::where(
-            'tenant_id',
-            auth()->user()->tenant_id
-        )->get();
     }
 }

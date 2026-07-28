@@ -39,8 +39,4 @@ class TransactionController extends Controller
         return view('organizer.transaction.show', compact('transaction'));
     }
 
-    public function organizer()
-    {
-        return $this->belongsTo(Organizer::class);
-    }
 }
