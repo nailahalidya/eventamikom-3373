@@ -54,21 +54,10 @@
                         </td>
 
                         <td class="px-6 py-4">
-
-                            @if($organizer->logo)
-
-                                <img
-                                    src="{{ asset('storage/'.$organizer->logo) }}"
-                                    class="w-14 h-14 rounded-xl object-cover border">
-
-                            @else
-
-                                <div class="w-14 h-14 rounded-xl bg-slate-200 flex items-center justify-center text-slate-500 text-xs">
-                                    No Logo
-                                </div>
-
-                            @endif
-
+                            <img
+                                src="{{ $organizer->logo_url }}"
+                                alt="{{ $organizer->name }}"
+                                class="w-14 h-14 rounded-xl object-cover border">
                         </td>
 
                         <td class="px-6 py-4 font-semibold text-slate-800">

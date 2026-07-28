@@ -10,19 +10,10 @@
         <div class="flex items-start gap-6">
 
             {{-- Logo --}}
-            @if($organizer->logo)
-
-                <img
-                    src="{{ asset('storage/'.$organizer->logo) }}"
-                    class="w-28 h-28 rounded-xl object-cover border">
-
-            @else
-
-                <div class="w-28 h-28 rounded-xl bg-slate-200 flex items-center justify-center text-slate-500">
-                    Logo
-                </div>
-
-            @endif
+            <img
+                src="{{ $organizer->logo_url }}"
+                alt="{{ $organizer->name }}"
+                class="w-28 h-28 rounded-xl object-cover border">
 
             {{-- Informasi --}}
             <div class="flex-1">
