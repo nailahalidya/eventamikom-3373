@@ -9,6 +9,7 @@ use App\Models\Transaction;
 use App\Mail\TicketMail;
 use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
@@ -96,25 +97,35 @@ class CheckoutController extends Controller
 
         // --- BYPASS MIDTRANS UNTUK ACARA GRATIS / HARGA RP 0 ---
         if ($totalPrice == 0) {
-            $transaction = Transaction::create([
-                'event_id' => $event->id,
-                'order_id' => $orderId,
-                'customer_name' => $request->customer_name,
-                'customer_email' => $request->customer_email,
-                'customer_phone' => $request->customer_phone,
-                'total_price' => 0,
-                'status' => 'settlement',
-                'qr_token' => $qrToken,
-            ]);
+            try {
+                $transaction = DB::transaction(function () use ($event, $orderId, $request, $qrToken) {
+                    $reserved = Event::where('id', $event->id)
+                        ->where('stock', '>', 0)
+                        ->decrement('stock');
 
-            // Potong stok langsung
-            $event->decrement('stock');
+                    if (!$reserved) {
+                        throw new \Exception('Mohon maaf, tiket untuk acara ini sudah habis.');
+                    }
+
+                    return Transaction::create([
+                        'event_id' => $event->id,
+                        'order_id' => $orderId,
+                        'customer_name' => $request->customer_name,
+                        'customer_email' => $request->customer_email,
+                        'customer_phone' => $request->customer_phone,
+                        'total_price' => 0,
+                        'status' => 'settlement',
+                        'qr_token' => $qrToken,
+                    ]);
+                });
+            } catch (\Exception $e) {
+                return back()->withInput()->with('error', 'Gagal membuat transaksi: ' . $e->getMessage());
+            }
 
             if ($coupon) {
                 $coupon->increment('used_count');
             }
 
-            // Kirim E-Ticket ke email & WhatsApp
             $transaction->sendTicket();
 
             return redirect()->route('checkout.success', $orderId)
@@ -122,20 +133,33 @@ class CheckoutController extends Controller
         }
 
         // --- TRANSAKSI BERBAYAR (MIDTRANS) ---
-        $transaction = Transaction::create([
-            'event_id' => $event->id,
-            'order_id' => $orderId,
-            'customer_name' => $request->customer_name,
-            'customer_email' => $request->customer_email,
-            'customer_phone' => $request->customer_phone,
-            'total_price' => $totalPrice,
-            'status' => 'pending',
-            'qr_token' => $qrToken,
-            'expires_at' => now()->addMinutes(15),
-        ]);
+        try {
+            $transaction = DB::transaction(function () use ($event, $orderId, $request, $totalPrice, $qrToken) {
+                $reserved = Event::where('id', $event->id)
+                    ->where('stock', '>', 0)
+                    ->decrement('stock');
 
-        // Tahan stok sementara
-        $event->decrement('stock');
+                if (!$reserved) {
+                    throw new \Exception('Mohon maaf, tiket untuk acara ini sudah habis.');
+                }
+
+                return Transaction::create([
+                    'event_id' => $event->id,
+                    'order_id' => $orderId,
+                    'customer_name' => $request->customer_name,
+                    'customer_email' => $request->customer_email,
+                    'customer_phone' => $request->customer_phone,
+                    'total_price' => $totalPrice,
+                    'status' => 'pending',
+                    'qr_token' => $qrToken,
+                    'expires_at' => now()->addMinutes(15),
+                ]);
+            });
+        } catch (\Exception $e) {
+            return back()
+                ->withInput()
+                ->with('error', 'Gagal memproses checkout: ' . $e->getMessage());
+        }
 
         if ($coupon) {
             $coupon->increment('used_count');

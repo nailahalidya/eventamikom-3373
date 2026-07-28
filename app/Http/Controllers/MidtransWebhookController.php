@@ -17,14 +17,28 @@ class MidtransWebhookController extends Controller
 
         $payload = $request->all();
 
+        $signatureKey = $payload['signature_key'] ?? null;
         $orderId = $payload['order_id'] ?? null;
         $transactionStatus = $payload['transaction_status'] ?? null;
         $fraudStatus = $payload['fraud_status'] ?? null;
+        $statusCode = $payload['status_code'] ?? null;
+        $grossAmount = $payload['gross_amount'] ?? null;
 
-        if (!$orderId) {
+        if (!$orderId || !$signatureKey || !$statusCode || !$grossAmount) {
             return response()->json([
                 'message' => 'Invalid payload, but callback endpoint is reachable',
             ], 200);
+        }
+
+        if (!$this->verifySignature($orderId, $statusCode, $grossAmount, $signatureKey)) {
+            Log::warning('Midtrans callback signature verification failed', [
+                'order_id' => $orderId,
+                'received_signature' => $signatureKey,
+            ]);
+
+            return response()->json([
+                'message' => 'Signature verification failed',
+            ], 403);
         }
 
         $transaction = Transaction::with('event')
@@ -76,11 +90,21 @@ class MidtransWebhookController extends Controller
 
     private function processSuccess(Transaction $transaction)
     {
-        if ($transaction->event && $transaction->event->stock > 0) {
-            $transaction->event->decrement('stock');
+        // Stok sudah ditahan saat checkout/pembuatan transaksi pending.
+        // Hanya kirim tiket, jangan mengurangi stok lagi.
+        $transaction->sendTicket();
+    }
+
+    private function verifySignature(string $orderId, string $statusCode, string $grossAmount, string $signatureKey): bool
+    {
+        $serverKey = env('MIDTRANS_SERVER_KEY');
+        if (!$serverKey) {
+            Log::error('Midtrans signature verification failed because MIDTRANS_SERVER_KEY is missing.');
+            return false;
         }
 
-        // Kirim tiket hanya sekali via flag ticket_sent
-        $transaction->sendTicket();
+        $expectedSignature = hash('sha512', $orderId . $statusCode . $grossAmount . $serverKey);
+
+        return hash_equals($expectedSignature, $signatureKey);
     }
 }
