@@ -72,7 +72,7 @@
                         </td>
 
                         <td class="px-6 py-4 font-semibold text-slate-800">
-                            {{ $organizer->organization_name }}
+                            {{ $organizer->name }}
                         </td>
 
                         <td class="px-6 py-4 text-slate-600">

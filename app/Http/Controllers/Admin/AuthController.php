@@ -85,17 +85,17 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $validated = $request->validate([
-            'organization_name' => 'required|string|max:255',
-            'contact_person'    => 'required|string|max:255',
-            'email'             => 'required|email|unique:users,email|unique:organizers,email',
-            'phone'             => 'required|string|max:20',
-            'address'           => 'nullable|string',
-            'password'          => 'required|confirmed|min:8',
+            'name'        => 'required|string|max:255',
+            'logo'        => 'nullable|url|max:500',
+            'email'       => 'required|email|unique:users,email|unique:organizers,email',
+            'phone'       => 'required|string|max:20',
+            'description' => 'nullable|string',
+            'password'    => 'required|confirmed|min:8',
         ]);
 
         // Simpan akun login
         $user = User::create([
-            'name'     => $validated['contact_person'],
+            'name'     => $validated['name'],
             'email'    => $validated['email'],
             'password' => Hash::make($validated['password']),
             'role'     => 'organizer',
@@ -104,10 +104,11 @@ class AuthController extends Controller
         // Simpan data organizer
         Organizer::create([
             'user_id'     => $user->id,
-            'name'        => $validated['organization_name'],
+            'name'        => $validated['name'],
+            'logo'        => $validated['logo'] ?? null,
             'email'       => $validated['email'],
             'phone'       => $validated['phone'],
-            'description' => $validated['address'],
+            'description' => $validated['description'] ?? null,
             'status'      => 'pending',
         ]);
 
