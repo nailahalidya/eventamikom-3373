@@ -223,8 +223,8 @@ Route::prefix('admin')
 */
 
 Route::get('/checkin', [CheckinController::class, 'show'])->name('checkin.show');
-Route::post('/api/checkin', [CheckinController::class, 'scan'])->name('api.checkin');
-Route::post('/api/coupon/apply', [CheckoutController::class, 'applyCoupon'])->name('api.coupon.apply');
+Route::post('/checkin/scan', [CheckinController::class, 'scan'])->name('api.checkin');
+Route::post('/coupon/apply', [CheckoutController::class, 'applyCoupon'])->name('api.coupon.apply');
 
 /*
 |--------------------------------------------------------------------------
