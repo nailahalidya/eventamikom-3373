@@ -11,10 +11,11 @@ class CouponController extends Controller
 {
     public function index()
     {
-        $coupons = Coupon::with('event')->latest()->paginate(15);
+        $coupons = Coupon::with(['event', 'ticketTier'])->latest()->paginate(15);
         $events = Event::select('id', 'title')->orderBy('title')->get();
+        $tiers = \App\Models\TicketTier::with('event')->orderBy('event_id')->get();
 
-        return view('admin.coupons.index', compact('coupons', 'events'));
+        return view('admin.coupons.index', compact('coupons', 'events', 'tiers'));
     }
 
     public function store(Request $request)
@@ -35,6 +36,7 @@ class CouponController extends Controller
             'max_uses' => $request->max_uses,
             'expires_at' => $request->expires_at ? \Carbon\Carbon::parse($request->expires_at)->endOfDay() : null,
             'event_id' => $request->event_id,
+            'ticket_tier_id' => $request->ticket_tier_id ?? null,
             'is_active' => true,
         ]);
 

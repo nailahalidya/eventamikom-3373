@@ -50,6 +50,22 @@
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Tipe Diskon</label>
+                        <select name="type" required class="w-full px-3 py-3 rounded-xl border border-slate-200 text-sm font-bold text-slate-700 outline-none">
+                            <option value="fixed">Nominal (Rp)</option>
+                            <option value="percent">Persentase (%)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Nilai Diskon</label>
+                        <input type="number" name="discount_amount" placeholder="Misal: 50000 atau 50" required min="1"
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 font-bold focus:ring-2 focus:ring-indigo-500 outline-none text-sm">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
                         <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Batas Pakai</label>
                         <input type="number" name="max_uses" placeholder="Opsional (mis: 100)" min="1"
                             class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-medium">
@@ -64,12 +80,23 @@
 
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Khusus Event (Opsional)</label>
-                    <select name="event_id" class="w-full px-3 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-700 outline-none">
+                    <select name="event_id" id="coupon-event-select" class="w-full px-3 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-700 outline-none">
                         <option value="">Berlaku Semua Event</option>
                         @foreach($events as $ev)
                             <option value="{{ $ev->id }}">{{ $ev->title }}</option>
                         @endforeach
                     </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Target Ticket Tier (Opsional)</label>
+                    <select name="ticket_tier_id" id="coupon-tier-select" class="w-full px-3 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-700 outline-none">
+                        <option value="">Tidak menargetkan tier</option>
+                        @foreach($tiers as $t)
+                            <option value="{{ $t->id }}" data-event-id="{{ $t->event_id }}">{{ $t->event->title ?? 'Event' }} — {{ $t->name }} — Rp {{ number_format($t->price,0,',','.') }}</option>
+                        @endforeach
+                    </select>
+                    <p class="text-xs text-slate-400 mt-2">Pilih tier jika kupon ini hanya berlaku untuk tier tertentu (override harga tier).</p>
                 </div>
 
                 <button type="submit" class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-sm shadow-lg shadow-indigo-200 transition">

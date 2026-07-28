@@ -17,6 +17,7 @@ class Coupon extends Model
         'used_count',
         'expires_at',
         'event_id',
+        'ticket_tier_id',
         'is_active',
     ];
 
@@ -24,6 +25,11 @@ class Coupon extends Model
         'expires_at' => 'datetime',
         'is_active' => 'boolean',
     ];
+
+    public function ticketTier()
+    {
+        return $this->belongsTo(\App\Models\TicketTier::class, 'ticket_tier_id');
+    }
 
     public function event()
     {
