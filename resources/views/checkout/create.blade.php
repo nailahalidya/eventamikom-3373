@@ -42,7 +42,12 @@
         <!-- Summary Card -->
         <div class="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
             <div class="flex justify-between items-center mb-6 border-b pb-4">
-                <h3 class="text-xl font-bold text-slate-800">Ringkasan Pesanan</h3>
+                <div>
+                    <h3 class="text-xl font-bold text-slate-800">Ringkasan Pesanan</h3>
+                    <p id="selected-tier-label" class="text-xs text-slate-500 mt-1">
+                        {{ $availableTiers->isNotEmpty() ? 'Harga berdasarkan tier tiket yang dipilih.' : ($tierName !== 'Regular' ? 'Harga ' . $tierName : 'Harga Reguler') }}
+                    </p>
+                </div>
                 @if($tierName !== 'Regular')
                     <span class="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-black uppercase tracking-wide">
                         🔥 Harga {{ $tierName }}
@@ -67,7 +72,7 @@
                             <div class="space-y-2">
                                 @foreach($availableTiers as $t)
                                     <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-slate-50">
-                                        <input type="radio" name="tier_id" value="{{ $t->id }}" data-price="{{ $t->price }}" {{ $loop->first ? 'checked' : '' }}>
+                                        <input type="radio" name="tier_id" value="{{ $t->id }}" data-price="{{ $t->price }}" data-name="{{ $t->name }}" {{ $loop->first ? 'checked' : '' }}>
                                         <div class="flex-1">
                                             <div class="flex justify-between items-center">
                                                 <div class="font-extrabold">{{ $t->name }}</div>
@@ -179,25 +184,66 @@
 </main>
 
 <script>
+    const tierRadios = Array.from(document.querySelectorAll('input[name="tier_id"]'));
+    const labelTicketPrice = document.getElementById('label-ticket-price');
+    const labelTotalPrice = document.getElementById('label-total-price');
+    const selectedTierLabel = document.getElementById('selected-tier-label');
+    const rowAdminFee = document.getElementById('row-admin-fee');
+    const rowDiscount = document.getElementById('row-discount');
+    const formCouponCode = document.getElementById('form-coupon-code');
+    const inputCoupon = document.getElementById('input-coupon');
+    const btnSubmit = document.getElementById('btn-submit-checkout');
+    const couponFeedback = document.getElementById('coupon-feedback');
+
+    function formatPrice(value) {
+        return value === 0 ? 'Rp 0 (Gratis)' : 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
+    }
+
+    function computeTotal(price) {
+        const adminFee = price === 0 ? 0 : 5000;
+        const total = price + adminFee;
+
+        if (adminFee === 0) {
+            rowAdminFee.classList.add('hidden');
+        } else {
+            rowAdminFee.classList.remove('hidden');
+        }
+
+        labelTotalPrice.innerText = formatPrice(total);
+        return total;
+    }
+
+    function resetCouponState() {
+        formCouponCode.value = '';
+        inputCoupon.value = '';
+        if (couponFeedback) {
+            couponFeedback.className = 'mt-2 text-xs font-bold hidden';
+            couponFeedback.innerText = '';
+        }
+        if (rowDiscount) {
+            rowDiscount.classList.add('hidden');
+        }
+        btnSubmit.innerText = btnSubmit.dataset.defaultText;
+    }
+
     function applyCoupon() {
-        const code = document.getElementById('input-coupon').value.trim();
-        const feedback = document.getElementById('coupon-feedback');
+        const code = inputCoupon.value.trim();
 
         if (!code) {
-            feedback.className = "mt-2 text-xs font-bold text-rose-600 block";
-            feedback.innerText = "Masukkan kode kupon terlebih dahulu.";
+            couponFeedback.className = 'mt-2 text-xs font-bold text-rose-600 block';
+            couponFeedback.innerText = 'Masukkan kode kupon terlebih dahulu.';
             return;
         }
 
-        feedback.className = "mt-2 text-xs font-bold text-slate-500 block animate-pulse";
-        feedback.innerText = "Memeriksa kupon...";
+        couponFeedback.className = 'mt-2 text-xs font-bold text-slate-500 block animate-pulse';
+        couponFeedback.innerText = 'Memeriksa kupon...';
 
-        fetch("{{ route('api.coupon.apply') }}", {
-            method: "POST",
+        fetch('{{ route('api.coupon.apply') }}', {
+            method: 'POST',
             headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-                "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
             body: JSON.stringify({
                 code: code,
@@ -211,51 +257,58 @@
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                feedback.className = "mt-2 text-xs font-bold text-emerald-600 block";
-                feedback.innerText = "✅ " + data.message;
-                
-                document.getElementById('form-coupon-code').value = data.coupon_code;
-                document.getElementById('row-discount').classList.remove('hidden');
-                document.getElementById('label-discount').innerText = "- " + data.discount_formatted;
-                document.getElementById('label-total-price').innerText = data.total_price_formatted;
+                couponFeedback.className = 'mt-2 text-xs font-bold text-emerald-600 block';
+                couponFeedback.innerText = '✅ ' + data.message;
+
+                formCouponCode.value = data.coupon_code;
+                rowDiscount.classList.remove('hidden');
+                document.getElementById('label-discount').innerText = '- ' + data.discount_formatted;
+                labelTotalPrice.innerText = data.total_price_formatted;
 
                 if (data.admin_fee === 0) {
-                    document.getElementById('row-admin-fee').classList.add('hidden');
+                    rowAdminFee.classList.add('hidden');
                 } else {
-                    document.getElementById('row-admin-fee').classList.remove('hidden');
+                    rowAdminFee.classList.remove('hidden');
                 }
 
                 if (data.total_price === 0) {
-                    document.getElementById('btn-submit-checkout').innerText = "Daftar Gratis Sekarang 🎟️";
+                    btnSubmit.innerText = 'Daftar Gratis Sekarang 🎟️';
                 }
             } else {
-                feedback.className = "mt-2 text-xs font-bold text-rose-600 block";
-                feedback.innerText = "❌ " + data.message;
+                couponFeedback.className = 'mt-2 text-xs font-bold text-rose-600 block';
+                couponFeedback.innerText = '❌ ' + data.message;
             }
         })
-        .catch(err => {
-            feedback.className = "mt-2 text-xs font-bold text-rose-600 block";
-            feedback.innerText = "Gagal memproses kupon.";
+        .catch(() => {
+            couponFeedback.className = 'mt-2 text-xs font-bold text-rose-600 block';
+            couponFeedback.innerText = 'Gagal memproses kupon.';
         });
     }
 
-    // Update selected tier hidden input and visible price when radio changes
+    function updateSelectedTierDisplay(target) {
+        const price = parseFloat(target.getAttribute('data-price') || 0);
+        const name = target.getAttribute('data-name') || 'Tier Terpilih';
+
+        document.getElementById('form-tier-id').value = target.value;
+        labelTicketPrice.innerText = formatPrice(price);
+        selectedTierLabel.innerText = 'Tier terpilih: ' + name;
+        computeTotal(price);
+        resetCouponState();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        if (tierRadios.length > 0) {
+            btnSubmit.dataset.defaultText = btnSubmit.innerText;
+            const initialRadio = document.querySelector('input[name="tier_id"]:checked') || tierRadios[0];
+            if (initialRadio) {
+                updateSelectedTierDisplay(initialRadio);
+            }
+        }
+    });
+
     document.addEventListener('change', function (e) {
         if (e.target && e.target.name === 'tier_id') {
-            const price = parseFloat(e.target.getAttribute('data-price') || 0);
-            document.getElementById('form-tier-id').value = e.target.value;
-            document.getElementById('label-ticket-price').innerText = price === 0 ? 'Rp 0 (Gratis)' : 'Rp ' + new Intl.NumberFormat('id-ID').format(price);
-
-            // Reset coupon feedback when tier changes
-            const feedback = document.getElementById('coupon-feedback');
-            if (feedback) {
-                feedback.className = 'mt-2 text-xs font-bold hidden';
-                feedback.innerText = '';
-            }
-
-            // Reset discount row
-            const rowDiscount = document.getElementById('row-discount');
-            if (rowDiscount) rowDiscount.classList.add('hidden');
+            updateSelectedTierDisplay(e.target);
         }
     });
 </script>

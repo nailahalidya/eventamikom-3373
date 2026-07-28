@@ -220,14 +220,19 @@
 
                 </div>
 
-                <div class="flex justify-between items-center pt-4 border-t">
-                    <span class="text-2xl font-black text-indigo-600">
-                        @if ($event->price == 0)
-                        Gratis
-                        @else
-                        Rp {{ number_format($event->price, 0, ',', '.') }}
-                        @endif
-                    </span>
+                <div class="flex items-start justify-between gap-4 pt-4 border-t">
+                    <div>
+                        <span class="block text-sm text-slate-500">
+                            {{ $event->active_tier_name !== 'Regular' ? $event->active_tier_name : 'Harga Reguler' }}
+                        </span>
+                        <span class="text-2xl font-black text-indigo-600">
+                            @if ($event->current_price == 0)
+                                Gratis
+                            @else
+                                Rp {{ number_format($event->current_price, 0, ',', '.') }}
+                            @endif
+                        </span>
+                    </div>
 
                     <a href="{{ route('events.show', $event->id) }}"
                         class="px-5 py-2 bg-indigo-50 text-indigo-600 rounded-xl font-bold hover:bg-indigo-600 hover:text-white transition">
