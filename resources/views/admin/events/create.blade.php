@@ -123,7 +123,46 @@
                     <label class="block text-sm font-bold text-slate-700 mb-4">Ticket Tiers (Early bird / Presale / Regular)</label>
 
                     <div id="tiers-container" class="space-y-4">
-                        <!-- empty by default for create -->
+                        @foreach(old('tiers', []) as $tier)
+                            @php
+                                $tierId = data_get($tier, 'id');
+                                $tierName = data_get($tier, 'name');
+                                $tierPrice = data_get($tier, 'price');
+                                $tierStock = data_get($tier, 'stock');
+                                $tierStartAt = data_get($tier, 'start_at');
+                                $tierEndAt = data_get($tier, 'end_at');
+                                $tierPriority = data_get($tier, 'priority', 10);
+                            @endphp
+                            <div class="tier-row p-4 rounded-xl border border-slate-100 bg-white flex gap-3 items-start">
+                                <input type="hidden" name="tiers[][id]" value="{{ $tierId }}">
+                                <input type="hidden" name="tiers[][priority]" value="{{ $tierPriority }}">
+                                <div class="flex-1 grid grid-cols-6 gap-3">
+                                    <div class="col-span-2">
+                                        <label class="block text-[11px] font-bold text-slate-600 mb-1">Nama Tier</label>
+                                        <input type="text" name="tiers[][name]" value="{{ $tierName }}" class="w-full px-3 py-2 rounded border border-slate-200" required>
+                                    </div>
+                                    <div class="col-span-1">
+                                        <label class="block text-[11px] font-bold text-slate-600 mb-1">Harga</label>
+                                        <input type="number" name="tiers[][price]" value="{{ $tierPrice }}" class="w-full px-3 py-2 rounded border border-slate-200" required>
+                                    </div>
+                                    <div class="col-span-1">
+                                        <label class="block text-[11px] font-bold text-slate-600 mb-1">Stok</label>
+                                        <input type="number" name="tiers[][stock]" value="{{ $tierStock }}" class="w-full px-3 py-2 rounded border border-slate-200">
+                                    </div>
+                                    <div class="col-span-1">
+                                        <label class="block text-[11px] font-bold text-slate-600 mb-1">Start</label>
+                                        <input type="date" name="tiers[][start_at]" value="{{ $tierStartAt }}" class="w-full px-3 py-2 rounded border border-slate-200">
+                                    </div>
+                                    <div class="col-span-1">
+                                        <label class="block text-[11px] font-bold text-slate-600 mb-1">End</label>
+                                        <input type="date" name="tiers[][end_at]" value="{{ $tierEndAt }}" class="w-full px-3 py-2 rounded border border-slate-200">
+                                    </div>
+                                </div>
+                                <div>
+                                    <button type="button" class="btn-remove-tier px-3 py-2 bg-rose-50 text-rose-600 rounded-lg">Hapus</button>
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
 
                     <div class="mt-3">
@@ -134,6 +173,7 @@
                     <template id="tier-template">
                         <div class="tier-row p-4 rounded-xl border border-slate-100 bg-white flex gap-3 items-start">
                             <input type="hidden" name="tiers[][id]" value="">
+                            <input type="hidden" name="tiers[][priority]" value="10">
                             <div class="flex-1 grid grid-cols-6 gap-3">
                                 <div class="col-span-2">
                                     <label class="block text-[11px] font-bold text-slate-600 mb-1">Nama Tier</label>
@@ -168,6 +208,9 @@
                             const btn = document.getElementById('btn-add-tier');
                             const template = document.getElementById('tier-template').content;
 
+                            if (!container || !btn || !template) {
+                                return;
+                            }
                             function removeHandler(e){
                                 const row = e.target.closest('.tier-row');
                                 if(row) row.remove();
@@ -179,8 +222,9 @@
                                 }
                             });
 
-                            btn.addEventListener('click', function(){
-                                const clone = document.importNode(template, true);
+                            btn.addEventListener('click', function(e){
+                                e.preventDefault();
+                                const clone = template.cloneNode(true);
                                 container.appendChild(clone);
                             });
                         })();
