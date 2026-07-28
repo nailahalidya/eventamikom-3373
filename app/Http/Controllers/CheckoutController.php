@@ -235,11 +235,11 @@ class CheckoutController extends Controller
         $coupon = Coupon::where('code', strtoupper(trim($request->code)))->first();
 
         if (!$coupon) {
-            return response()->json(['success' => false, 'message' => 'Kode kupon tidak ditemukan.'], 404);
+            return response()->json(['success' => false, 'message' => 'Kode kupon tidak ditemukan.'], 200);
         }
 
         if (!$coupon->isValidForEvent($event->id)) {
-            return response()->json(['success' => false, 'message' => 'Kode kupon tidak berlaku atau sudah kadaluarsa.'], 422);
+            return response()->json(['success' => false, 'message' => 'Kode kupon tidak berlaku atau sudah kadaluarsa.'], 200);
         }
 
         $basePrice = $event->current_price;

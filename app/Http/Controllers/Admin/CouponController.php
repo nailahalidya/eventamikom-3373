@@ -33,7 +33,7 @@ class CouponController extends Controller
             'type' => $request->type,
             'discount_amount' => $request->discount_amount,
             'max_uses' => $request->max_uses,
-            'expires_at' => $request->expires_at,
+            'expires_at' => $request->expires_at ? \Carbon\Carbon::parse($request->expires_at)->endOfDay() : null,
             'event_id' => $request->event_id,
             'is_active' => true,
         ]);
