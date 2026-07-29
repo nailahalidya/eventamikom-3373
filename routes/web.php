@@ -144,7 +144,7 @@ Route::get('/auth/google/callback', [GoogleController::class, 'callback']);
 |--------------------------------------------------------------------------
 */
 
-Route::post('/logout', function () {
+Route::match(['get', 'post'], '/logout', function () {
 
     Auth::logout();
 
@@ -189,7 +189,7 @@ Route::prefix('admin')
         Route::get('/dashboard', [DashboardController::class, 'index'])
             ->name('dashboard');
 
-        Route::post('/logout', [AuthController::class, 'logout'])
+        Route::match(['get', 'post'], '/logout', [AuthController::class, 'logout'])
             ->name('logout');
 
         Route::resource('events', EventAdminController::class);
