@@ -240,6 +240,9 @@ Route::prefix('organizer')
         Route::get('/dashboard', [OrganizerDashboardController::class, 'index'])
             ->name('dashboard');
 
+        Route::match(['get', 'post'], '/logout', [AuthController::class, 'logout'])
+            ->name('logout');
+
         Route::resource('events', OrganizerEventController::class);
 
         Route::resource('transaction', OrganizerTransactionController::class)

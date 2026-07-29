@@ -138,8 +138,8 @@
             <hr class="border-indigo-800 my-4">
 
             <a href="#"
-                onclick="event.preventDefault(); if(confirm('Keluar dari halaman admin?')) { document.getElementById('logout-form').submit(); }"
-                class="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-red-200 hover:bg-red-600 hover:text-white transition">
+                onclick="event.preventDefault(); if(confirm('Keluar dari panel {{ auth()->user()->role == 'admin' ? 'Admin' : 'Organizer' }}?')) { document.getElementById('logout-form').submit(); }"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-red-200 hover:bg-red-600 hover:text-white transition cursor-pointer">
 
                 <svg xmlns="http://www.w3.org/2000/svg"
                     class="w-5 h-5"
@@ -159,7 +159,7 @@
             </a>
 
             <form id="logout-form"
-                action="{{ route('logout') }}"
+                action="{{ auth()->user() && auth()->user()->role === 'organizer' ? route('organizer.logout') : route('admin.logout') }}"
                 method="POST"
                 class="hidden">
 

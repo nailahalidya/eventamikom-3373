@@ -21,5 +21,12 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, $request) {
+            if ($request->is('logout') || $request->is('*/logout') || $request->routeIs('*logout*')) {
+                \Illuminate\Support\Facades\Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+                return redirect('/admin/login')->with('info', 'Sesi telah berakhir. Silakan login kembali.');
+            }
+        });
     })->create();
