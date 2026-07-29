@@ -47,4 +47,9 @@ return [
         'is_production' => env('MIDTRANS_IS_PRODUCTION', false),
     ],
 
+    'fonnte' => [
+        'token' => env('FONNTE_TOKEN', env('FONNTE_WA_TOKEN')),
+        'endpoint' => env('FONNTE_WA_URL', 'https://api.fonnte.com/send'),
+    ],
+
 ];

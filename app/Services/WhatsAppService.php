@@ -72,8 +72,8 @@ class WhatsAppService
      */
     protected function sendMessage($phone, $message)
     {
-        $token = env('FONNTE_WA_TOKEN', env('WA_API_TOKEN'));
-        $endpoint = env('FONNTE_WA_URL', 'https://api.fonnte.com/send');
+        $token = config('services.fonnte.token') ?? env('FONNTE_TOKEN') ?? env('FONNTE_WA_TOKEN') ?? env('WA_API_TOKEN');
+        $endpoint = config('services.fonnte.endpoint') ?? env('FONNTE_WA_URL', 'https://api.fonnte.com/send');
 
         if (empty($token)) {
             Log::info("WhatsApp Notification Simulated (No WA Token in .env)", [
@@ -93,6 +93,7 @@ class WhatsAppService
             ])->post($endpoint, [
                 'target' => $phone,
                 'message' => $message,
+                'countryCode' => '62',
             ]);
 
             Log::info("WhatsApp API Response", ['body' => $response->body()]);
