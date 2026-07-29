@@ -61,10 +61,37 @@ class CheckinController extends Controller
             'status' => 'used',
         ]);
 
+        // Terbitkan & kirim E-Sertifikat otomatis via Email saat check-in terverifikasi
+        if ($transaction->event_id) {
+            try {
+                $user = \App\Models\User::where('email', $transaction->customer_email)->first();
+                if (!$user) {
+                    $user = \App\Models\User::firstOrCreate(
+                        ['email' => $transaction->customer_email],
+                        [
+                            'name' => $transaction->customer_name ?? 'Peserta Event',
+                            'role' => 'user',
+                            'password' => \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(16)),
+                        ]
+                    );
+                }
+
+                $exists = \App\Models\Certificate::where('user_id', $user->id)
+                    ->where('event_id', $transaction->event_id)
+                    ->exists();
+
+                if (!$exists) {
+                    \App\Jobs\GenerateAndSendCertificate::dispatch($user->id, $transaction->event_id);
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Gagal memicu e-certificate pada checkin: ' . $e->getMessage());
+            }
+        }
+
         return response()->json([
             'success' => true,
             'status' => 'SUCCESS',
-            'message' => '✅ CHECK-IN BERHASIL! Silakan Masuk.',
+            'message' => '✅ CHECK-IN BERHASIL! E-Sertifikat otomatis diproses ke email.',
             'customer_name' => $transaction->customer_name,
             'customer_email' => $transaction->customer_email,
             'event_title' => $transaction->event->title ?? '-',

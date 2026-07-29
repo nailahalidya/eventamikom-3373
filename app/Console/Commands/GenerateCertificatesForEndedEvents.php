@@ -27,7 +27,16 @@ class GenerateCertificatesForEndedEvents extends Command
 
             foreach ($transactions as $transaction) {
                 $user = User::where('email', $transaction->customer_email)->first();
-                if (!$user) continue;
+                if (!$user) {
+                    $user = User::firstOrCreate(
+                        ['email' => $transaction->customer_email],
+                        [
+                            'name' => $transaction->customer_name ?? 'Peserta Event',
+                            'role' => 'user',
+                            'password' => \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(16)),
+                        ]
+                    );
+                }
 
                 // Avoid duplicate certificates
                 $already = $event->certificates()->where('user_id', $user->id)->exists();
