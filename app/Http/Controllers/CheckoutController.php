@@ -91,10 +91,10 @@ class CheckoutController extends Controller
                 })
                 ->first();
  
-            if (!$selectedTier) {
+            if (!$selectedTier || (!is_null($selectedTier->stock) && $selectedTier->stock <= 0)) {
                 return back()
                     ->withInput()
-                    ->with('error', 'Pilihan tiket tidak valid atau sudah tidak tersedia.');
+                    ->with('error', 'Pilihan tiket tidak valid atau tiket kategori ini sudah habis.');
             }
  
             $basePrice = $selectedTier->price;
@@ -139,6 +139,15 @@ class CheckoutController extends Controller
         if ($totalPrice == 0) {
             try {
                 $transaction = DB::transaction(function () use ($event, $orderId, $request, $qrToken, $coupon, $selectedTier) {
+                    if ($selectedTier && !is_null($selectedTier->stock)) {
+                        $tierReserved = \App\Models\TicketTier::where('id', $selectedTier->id)
+                            ->where('stock', '>', 0)
+                            ->decrement('stock');
+                        if (!$tierReserved) {
+                            throw new \Exception('Mohon maaf, tiket kategori ' . $selectedTier->name . ' sudah habis.');
+                        }
+                    }
+
                     $reserved = Event::where('id', $event->id)
                         ->where('stock', '>', 0)
                         ->decrement('stock');
@@ -175,6 +184,15 @@ class CheckoutController extends Controller
         // --- TRANSAKSI BERBAYAR (MIDTRANS) ---
         try {
             $transaction = DB::transaction(function () use ($event, $orderId, $request, $totalPrice, $qrToken, $coupon, $selectedTier) {
+                if ($selectedTier && !is_null($selectedTier->stock)) {
+                    $tierReserved = \App\Models\TicketTier::where('id', $selectedTier->id)
+                        ->where('stock', '>', 0)
+                        ->decrement('stock');
+                    if (!$tierReserved) {
+                        throw new \Exception('Mohon maaf, tiket kategori ' . $selectedTier->name . ' sudah habis.');
+                    }
+                }
+
                 $reserved = Event::where('id', $event->id)
                     ->where('stock', '>', 0)
                     ->decrement('stock');
@@ -209,8 +227,8 @@ class CheckoutController extends Controller
             \Illuminate\Support\Facades\Log::error('Failed sending WA payment link recovery: ' . $e->getMessage());
         }
 
-        \Midtrans\Config::$serverKey = env('MIDTRANS_SERVER_KEY');
-        \Midtrans\Config::$isProduction = false;
+        \Midtrans\Config::$serverKey = config('services.midtrans.server_key') ?? env('MIDTRANS_SERVER_KEY');
+        \Midtrans\Config::$isProduction = config('services.midtrans.is_production') ?? env('MIDTRANS_IS_PRODUCTION', false);
         \Midtrans\Config::$isSanitized = true;
         \Midtrans\Config::$is3ds = true;
 

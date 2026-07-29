@@ -96,7 +96,7 @@ class MidtransWebhookController extends Controller
 
     private function verifySignature(string $orderId, string $statusCode, string $grossAmount, string $signatureKey): bool
     {
-        $serverKey = env('MIDTRANS_SERVER_KEY');
+        $serverKey = config('services.midtrans.server_key') ?? env('MIDTRANS_SERVER_KEY');
         if (!$serverKey) {
             Log::error('Midtrans signature verification failed because MIDTRANS_SERVER_KEY is missing.');
             return false;

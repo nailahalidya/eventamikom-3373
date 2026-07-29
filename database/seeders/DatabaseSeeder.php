@@ -133,7 +133,43 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($events as $eventData) {
-            Event::firstOrCreate(['title' => $eventData['title']], $eventData);
+            $createdEvent = Event::firstOrCreate(['title' => $eventData['title']], $eventData);
+
+            \App\Models\TicketTier::firstOrCreate(
+                ['event_id' => $createdEvent->id, 'name' => 'Early Bird'],
+                [
+                    'price' => max(0, $createdEvent->price - 20000),
+                    'stock' => 25,
+                    'priority' => 1,
+                    'start_at' => now()->subDays(5),
+                    'end_at' => now()->addDays(5),
+                ]
+            );
+
+            \App\Models\TicketTier::firstOrCreate(
+                ['event_id' => $createdEvent->id, 'name' => 'Regular'],
+                [
+                    'price' => $createdEvent->price,
+                    'stock' => 75,
+                    'priority' => 2,
+                    'start_at' => now()->addDays(5),
+                    'end_at' => now()->addDays(30),
+                ]
+            );
         }
+
+        \App\Models\Coupon::firstOrCreate(
+            ['code' => 'AMIKOM50'],
+            [
+                'name' => 'Diskon Spesial Amikom 50%',
+                'type' => 'percentage',
+                'value' => 50,
+                'max_uses' => 100,
+                'used_count' => 0,
+                'is_active' => true,
+                'starts_at' => now()->subDay(),
+                'expires_at' => now()->addYear(),
+            ]
+        );
     }
 }

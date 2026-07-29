@@ -116,6 +116,7 @@ class NewFeaturesTest extends TestCase
         $this->assertEquals(0, $coupon->fresh()->used_count);
 
         putenv('MIDTRANS_SERVER_KEY=test');
+        config(['services.midtrans.server_key' => 'test']);
         $signature = hash('sha512', $transaction->order_id . '200' . $transaction->total_price . 'test');
 
         $callbackResponse = $this->postJson(route('midtrans.callback'), [
