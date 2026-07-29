@@ -28,9 +28,10 @@ class TransactionController extends Controller
         // 2. Auto-sync remaining pending transactions with Midtrans API
         $pendingTransactions = Transaction::where('status', 'pending')->take(20)->get();
 
-        if ($pendingTransactions->isNotEmpty()) {
-            \Midtrans\Config::$serverKey = env('MIDTRANS_SERVER_KEY');
-            \Midtrans\Config::$isProduction = env('MIDTRANS_IS_PRODUCTION', false);
+        $serverKey = config('services.midtrans.server_key') ?? env('MIDTRANS_SERVER_KEY');
+        if ($pendingTransactions->isNotEmpty() && !empty($serverKey)) {
+            \Midtrans\Config::$serverKey = $serverKey;
+            \Midtrans\Config::$isProduction = config('services.midtrans.is_production') ?? env('MIDTRANS_IS_PRODUCTION', false);
 
             foreach ($pendingTransactions as $trx) {
                 try {

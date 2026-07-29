@@ -18,9 +18,10 @@ class DashboardController extends Controller
 
         // Auto-sync pending transactions dengan Midtrans API
         $pendingCheck = Transaction::where('status', 'pending')->take(10)->get();
-        if ($pendingCheck->isNotEmpty()) {
-            \Midtrans\Config::$serverKey = env('MIDTRANS_SERVER_KEY');
-            \Midtrans\Config::$isProduction = env('MIDTRANS_IS_PRODUCTION', false);
+        $serverKey = config('services.midtrans.server_key') ?? env('MIDTRANS_SERVER_KEY');
+        if ($pendingCheck->isNotEmpty() && !empty($serverKey)) {
+            \Midtrans\Config::$serverKey = $serverKey;
+            \Midtrans\Config::$isProduction = config('services.midtrans.is_production') ?? env('MIDTRANS_IS_PRODUCTION', false);
 
             foreach ($pendingCheck as $trx) {
                 try {
