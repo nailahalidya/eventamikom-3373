@@ -227,21 +227,21 @@
 
                 </div>
 
-                <div class="flex items-start justify-between gap-4 pt-4 border-t">
+                <div class="flex items-center justify-between gap-3 pt-4 border-t border-slate-100 mt-2">
                     <div>
-                        <span class="block text-xs font-bold text-indigo-600 uppercase tracking-wider">
+                        <span class="block text-[11px] font-extrabold text-indigo-600 uppercase tracking-wider mb-0.5">
                             {{ $event->active_tier_name ? $event->active_tier_name : 'Harga Reguler' }}
                         </span>
-                        <div class="flex items-baseline gap-2">
-                            <span class="text-2xl font-black text-indigo-600">
+                        <div class="flex items-baseline gap-2 flex-wrap">
+                            <span class="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
                                 @if ($event->current_price == 0)
-                                    Gratis
+                                    <span class="text-emerald-600 font-black">Gratis 🎟️</span>
                                 @else
-                                    Rp {{ number_format($event->current_price, 0, ',', '.') }}
+                                    <span class="text-indigo-600 font-black">Rp {{ number_format($event->current_price, 0, ',', '.') }}</span>
                                 @endif
                             </span>
                             @if($event->price > $event->current_price)
-                                <span class="text-xs text-slate-400 line-through font-semibold">
+                                <span class="text-xs text-slate-400 line-through font-bold">
                                     Rp {{ number_format($event->price, 0, ',', '.') }}
                                 </span>
                             @endif
@@ -249,7 +249,7 @@
                     </div>
 
                     <a href="{{ route('events.show', $event->id) }}"
-                        class="px-5 py-2 bg-indigo-50 text-indigo-600 rounded-xl font-bold hover:bg-indigo-600 hover:text-white transition">
+                        class="shrink-0 px-4 py-2.5 bg-indigo-50 text-indigo-600 rounded-2xl font-bold text-sm hover:bg-indigo-600 hover:text-white shadow-sm hover:shadow-indigo-200 transition-all duration-200 active:scale-95">
                         Lihat Detail
                     </a>
                 </div>
