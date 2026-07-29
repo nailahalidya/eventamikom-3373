@@ -200,12 +200,6 @@
                 Hubungi Kami
             </a>
 
-            <button type="button"
-                onclick="triggerPwaInstall()"
-                class="pwa-install-btn px-3 py-1.5 bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white rounded-xl font-bold text-xs transition-all flex items-center gap-1.5 shadow-sm border border-emerald-200 cursor-pointer">
-                <span>📱</span> Buka di Aplikasi
-            </button>
-
         </div>
 
         <!-- Login Google / User -->
@@ -448,86 +442,6 @@
         </div>
 
     </footer>
-
-    <!-- PWA Install Banner -->
-    <div id="pwa-install-banner" class="hidden fixed bottom-6 left-6 right-6 md:left-auto md:right-6 md:max-w-md bg-slate-900 text-white p-4 rounded-2xl shadow-2xl border border-indigo-500/30 z-50 flex items-center justify-between gap-4">
-        <div class="flex items-center gap-3">
-            <img src="/assets/icon-192.png" alt="App Icon" class="w-12 h-12 rounded-xl object-cover border border-white/20">
-            <div>
-                <p class="font-bold text-sm text-white">Install AmikomEventHub</p>
-                <p class="text-xs text-slate-300">Pasang aplikasi di layar utama HP kamu untuk akses super cepat!</p>
-            </div>
-        </div>
-        <div class="flex items-center gap-2 shrink-0">
-            <button id="pwa-install-btn" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl transition shadow-lg shadow-indigo-600/30">
-                Install HP
-            </button>
-            <button onclick="document.getElementById('pwa-install-banner').classList.add('hidden')" class="p-1.5 text-slate-400 hover:text-white transition">
-                ✕
-            </button>
-        </div>
-    </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const btn = document.getElementById('pwa-install-btn');
-            if (btn) {
-                btn.addEventListener('click', async () => {
-                    if (deferredPrompt) {
-                        deferredPrompt.prompt();
-                        const { outcome } = await deferredPrompt.userChoice;
-                        if (outcome === 'accepted') {
-                            console.log('PWA installation accepted');
-                        }
-                        deferredPrompt = null;
-                        document.getElementById('pwa-install-banner').classList.add('hidden');
-                    }
-                });
-            }
-        });
-    </script>
-
-    <!-- PWA Instruction Modal -->
-    <div id="pwa-instruction-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl relative border border-slate-100">
-            <button type="button" onclick="closePwaModal()" class="absolute top-4 right-4 w-9 h-9 bg-slate-100 text-slate-500 hover:bg-slate-200 rounded-full flex items-center justify-center font-bold text-lg">
-                ✕
-            </button>
-            <div class="text-center mb-6">
-                <div class="w-16 h-16 bg-indigo-600 rounded-2xl mx-auto flex items-center justify-center text-white text-2xl font-black shadow-lg shadow-indigo-200 mb-3">
-                    AH
-                </div>
-                <h3 class="text-xl font-black text-slate-900">Buka / Install AmikomEventHub</h3>
-                <p class="text-xs text-slate-500 mt-1">Nikmati akses super cepat layaknya aplikasi HP tanpa perlu unduh PlayStore/AppStore!</p>
-            </div>
-            
-            <div class="space-y-4 text-sm">
-                <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                    <div class="font-bold text-slate-800 flex items-center gap-2 mb-1">
-                        <span>🤖</span> Pengguna Android (Chrome / Edge / Brave)
-                    </div>
-                    <ol class="list-decimal list-inside text-xs text-slate-600 space-y-1 pl-1">
-                        <li>Ketuk ikon <strong>Titik Tiga (⋮)</strong> di pojok kanan atas browser.</li>
-                        <li>Pilih menu <strong>"Tambahkan ke Layar Utama"</strong> atau <strong>"Install Aplikasi"</strong>.</li>
-                    </ol>
-                </div>
-
-                <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                    <div class="font-bold text-slate-800 flex items-center gap-2 mb-1">
-                        <span>🍏</span> Pengguna iPhone (Safari)
-                    </div>
-                    <ol class="list-decimal list-inside text-xs text-slate-600 space-y-1 pl-1">
-                        <li>Ketuk tombol <strong>Bagikan (Share 📤)</strong> di bagian bawah Safari.</li>
-                        <li>Geser ke bawah dan pilih <strong>"Tambah ke Layar Utama (Add to Home Screen ➕)"</strong>.</li>
-                    </ol>
-                </div>
-            </div>
-
-            <button type="button" onclick="closePwaModal()" class="w-full mt-6 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition cursor-pointer">
-                Mengerti
-            </button>
-        </div>
-    </div>
 
     @stack('scripts')
 

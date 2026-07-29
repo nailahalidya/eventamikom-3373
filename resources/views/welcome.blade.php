@@ -18,17 +18,11 @@
             Dari konser musik hingga workshop teknologi, semua ada di genggamanmu. Pesan aman & cepat dengan Midtrans.
         </p>
 
-        <div class="flex flex-wrap gap-4 items-center">
+        <div class="flex gap-4">
             <a href="#events"
                 class="px-8 py-4 bg-indigo-600 text-white rounded-2xl font-bold text-lg shadow-xl shadow-indigo-200 hover:scale-105 transition-transform">
                 Mulai Jelajah
             </a>
-
-            <button type="button"
-                onclick="triggerPwaInstall()"
-                class="pwa-install-btn px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-2xl font-bold text-lg shadow-xl shadow-emerald-200 hover:scale-105 transition-all flex items-center gap-2 cursor-pointer">
-                <span class="animate-bounce">📱</span> Buka di Aplikasi
-            </button>
 
             <a href="{{ route('cara-pesan') }}"
                 class="px-8 py-4 border-2 border-slate-200 rounded-2xl font-bold text-lg hover:border-indigo-600 hover:text-indigo-600 transition">
