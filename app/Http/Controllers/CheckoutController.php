@@ -301,9 +301,10 @@ class CheckoutController extends Controller
             ->where('order_id', $order_id)
             ->firstOrFail();
 
-        if (env('MIDTRANS_SERVER_KEY')) {
-            \Midtrans\Config::$serverKey = env('MIDTRANS_SERVER_KEY');
-            \Midtrans\Config::$isProduction = false;
+        $serverKey = config('services.midtrans.server_key') ?? env('MIDTRANS_SERVER_KEY');
+        if (!empty($serverKey)) {
+            \Midtrans\Config::$serverKey = $serverKey;
+            \Midtrans\Config::$isProduction = config('services.midtrans.is_production') ?? env('MIDTRANS_IS_PRODUCTION', false);
             \Midtrans\Config::$isSanitized = true;
             \Midtrans\Config::$is3ds = true;
 
@@ -313,6 +314,7 @@ class CheckoutController extends Controller
 
                 if (in_array($status, ['capture', 'settlement'])) {
                     $transaction->update(['status' => 'settlement']);
+                    $transaction->refresh();
                 } elseif (in_array($status, ['cancel', 'deny', 'expire'])) {
                     $transaction->update(['status' => 'failed']);
                     $transaction->releaseStock();
