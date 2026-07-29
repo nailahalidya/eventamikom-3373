@@ -62,16 +62,21 @@ class EventController extends Controller
 
             // Handle tiers if provided
             if ($request->boolean('tiers_present') || $request->filled('tiers')) {
-                foreach ($request->input('tiers', []) as $t) {
+                foreach ($request->input('tiers', []) as $idx => $t) {
                     \App\Models\TicketTier::create([
                         'event_id' => $event->id,
                         'name' => $t['name'] ?? 'Tier',
                         'price' => $t['price'] ?? 0,
-                        'start_at' => !empty($t['start_at']) ? \Carbon\Carbon::parse($t['start_at']) : null,
-                        'end_at' => !empty($t['end_at']) ? \Carbon\Carbon::parse($t['end_at']) : null,
-                        'priority' => isset($t['priority']) ? (int) $t['priority'] : 10,
-                        'stock' => isset($t['stock']) ? (int) $t['stock'] : null,
+                        'start_at' => !empty($t['start_at']) ? \Carbon\Carbon::parse($t['start_at'])->startOfDay() : null,
+                        'end_at' => !empty($t['end_at']) ? \Carbon\Carbon::parse($t['end_at'])->endOfDay() : null,
+                        'priority' => isset($t['priority']) && $t['priority'] !== '' ? (int) $t['priority'] : ($idx + 1) * 10,
+                        'stock' => isset($t['stock']) && $t['stock'] !== '' ? (int) $t['stock'] : null,
                     ]);
+                }
+
+                $activeTier = $event->fresh()->getActiveTier();
+                if ($activeTier) {
+                    $event->update(['price' => $activeTier->price]);
                 }
             }
         });
@@ -128,13 +133,16 @@ class EventController extends Controller
         DB::transaction(function () use ($request, $event, $data) {
             $event->update($data);
 
-            // Handle tiers: create/update/delete based on input
             if ($request->boolean('tiers_present') || $request->has('tiers')) {
                 $incoming = $request->input('tiers', []);
                 $existingIds = $event->tiers()->pluck('id')->toArray();
                 $keep = [];
 
-                foreach ($incoming as $t) {
+                foreach ($incoming as $idx => $t) {
+                    $startAt = !empty($t['start_at']) ? \Carbon\Carbon::parse($t['start_at'])->startOfDay() : null;
+                    $endAt = !empty($t['end_at']) ? \Carbon\Carbon::parse($t['end_at'])->endOfDay() : null;
+                    $priority = isset($t['priority']) && $t['priority'] !== '' ? (int) $t['priority'] : ($idx + 1) * 10;
+
                     if (!empty($t['id'])) {
                         // Update existing
                         $tier = \App\Models\TicketTier::find($t['id']);
@@ -142,33 +150,39 @@ class EventController extends Controller
                             $tier->update([
                                 'name' => $t['name'] ?? $tier->name,
                                 'price' => $t['price'] ?? $tier->price,
-                                'start_at' => !empty($t['start_at']) ? \Carbon\Carbon::parse($t['start_at']) : null,
-                                'end_at' => !empty($t['end_at']) ? \Carbon\Carbon::parse($t['end_at']) : null,
-                                'priority' => isset($t['priority']) ? (int) $t['priority'] : $tier->priority,
-                                'stock' => isset($t['stock']) ? (int) $t['stock'] : $tier->stock,
+                                'start_at' => $startAt,
+                                'end_at' => $endAt,
+                                'priority' => $priority,
+                                'stock' => isset($t['stock']) && $t['stock'] !== '' ? (int) $t['stock'] : $tier->stock,
                             ]);
                             $keep[] = $tier->id;
                         }
                     } else {
                         // Create new
-                        $new = \App\Models\TicketTier::create([
+                        $newTier = \App\Models\TicketTier::create([
                             'event_id' => $event->id,
                             'name' => $t['name'] ?? 'Tier',
                             'price' => $t['price'] ?? 0,
-                            'start_at' => !empty($t['start_at']) ? \Carbon\Carbon::parse($t['start_at']) : null,
-                            'end_at' => !empty($t['end_at']) ? \Carbon\Carbon::parse($t['end_at']) : null,
-                            'priority' => isset($t['priority']) ? (int) $t['priority'] : 10,
-                            'stock' => isset($t['stock']) ? (int) $t['stock'] : null,
+                            'start_at' => $startAt,
+                            'end_at' => $endAt,
+                            'priority' => $priority,
+                            'stock' => isset($t['stock']) && $t['stock'] !== '' ? (int) $t['stock'] : null,
                         ]);
-                        $keep[] = $new->id;
+                        $keep[] = $newTier->id;
                     }
                 }
 
-                // Delete tiers not sent in incoming
+                // Delete removed tiers
                 $toDelete = array_diff($existingIds, $keep);
                 if (!empty($toDelete)) {
                     \App\Models\TicketTier::whereIn('id', $toDelete)->delete();
                 }
+            }
+
+            // Sync base price attribute with current active tier price if tiers exist
+            $activeTier = $event->fresh()->getActiveTier();
+            if ($activeTier) {
+                $event->update(['price' => $activeTier->price]);
             }
         });
 

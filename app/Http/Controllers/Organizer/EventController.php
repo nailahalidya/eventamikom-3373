@@ -49,6 +49,13 @@ class EventController extends Controller
             'price' => 'required|numeric|min:0',
             'stock' => 'required|numeric|min:0',
             'poster' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:40960',
+            'tiers' => 'nullable|array',
+            'tiers.*.name' => 'required_with:tiers|string',
+            'tiers.*.price' => 'required_with:tiers|numeric|min:0',
+            'tiers.*.start_at' => 'nullable|date',
+            'tiers.*.end_at' => 'nullable|date',
+            'tiers.*.priority' => 'nullable|integer',
+            'tiers.*.stock' => 'nullable|integer',
         ]);
 
         $data['owner_type'] = 'organizer';
@@ -61,7 +68,28 @@ class EventController extends Controller
             }
         }
 
-        Event::create($data);
+        \Illuminate\Support\Facades\DB::transaction(function () use ($request, $data) {
+            $event = Event::create($data);
+
+            if ($request->boolean('tiers_present') || $request->filled('tiers')) {
+                foreach ($request->input('tiers', []) as $idx => $t) {
+                    \App\Models\TicketTier::create([
+                        'event_id' => $event->id,
+                        'name' => $t['name'] ?? 'Tier',
+                        'price' => $t['price'] ?? 0,
+                        'start_at' => !empty($t['start_at']) ? \Carbon\Carbon::parse($t['start_at'])->startOfDay() : null,
+                        'end_at' => !empty($t['end_at']) ? \Carbon\Carbon::parse($t['end_at'])->endOfDay() : null,
+                        'priority' => isset($t['priority']) && $t['priority'] !== '' ? (int) $t['priority'] : ($idx + 1) * 10,
+                        'stock' => isset($t['stock']) && $t['stock'] !== '' ? (int) $t['stock'] : null,
+                    ]);
+                }
+
+                $activeTier = $event->fresh()->getActiveTier();
+                if ($activeTier) {
+                    $event->update(['price' => $activeTier->price]);
+                }
+            }
+        });
 
         return redirect()
             ->route('organizer.events.index')
@@ -94,6 +122,14 @@ class EventController extends Controller
             'price' => 'required|numeric|min:0',
             'stock' => 'required|numeric|min:0',
             'poster' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:40960',
+            'tiers' => 'nullable|array',
+            'tiers.*.id' => 'nullable|integer|exists:ticket_tiers,id',
+            'tiers.*.name' => 'required_with:tiers|string',
+            'tiers.*.price' => 'required_with:tiers|numeric|min:0',
+            'tiers.*.start_at' => 'nullable|date',
+            'tiers.*.end_at' => 'nullable|date',
+            'tiers.*.priority' => 'nullable|integer',
+            'tiers.*.stock' => 'nullable|integer',
         ]);
 
         if ($request->hasFile('poster')) {
@@ -115,7 +151,57 @@ class EventController extends Controller
             }
         }
 
-        $event->update($data);
+        \Illuminate\Support\Facades\DB::transaction(function () use ($request, $event, $data) {
+            $event->update($data);
+
+            if ($request->boolean('tiers_present') || $request->has('tiers')) {
+                $incoming = $request->input('tiers', []);
+                $existingIds = $event->tiers()->pluck('id')->toArray();
+                $keep = [];
+
+                foreach ($incoming as $idx => $t) {
+                    $startAt = !empty($t['start_at']) ? \Carbon\Carbon::parse($t['start_at'])->startOfDay() : null;
+                    $endAt = !empty($t['end_at']) ? \Carbon\Carbon::parse($t['end_at'])->endOfDay() : null;
+                    $priority = isset($t['priority']) && $t['priority'] !== '' ? (int) $t['priority'] : ($idx + 1) * 10;
+
+                    if (!empty($t['id'])) {
+                        $tier = \App\Models\TicketTier::find($t['id']);
+                        if ($tier && $tier->event_id == $event->id) {
+                            $tier->update([
+                                'name' => $t['name'] ?? $tier->name,
+                                'price' => $t['price'] ?? $tier->price,
+                                'start_at' => $startAt,
+                                'end_at' => $endAt,
+                                'priority' => $priority,
+                                'stock' => isset($t['stock']) && $t['stock'] !== '' ? (int) $t['stock'] : $tier->stock,
+                            ]);
+                            $keep[] = $tier->id;
+                        }
+                    } else {
+                        $newTier = \App\Models\TicketTier::create([
+                            'event_id' => $event->id,
+                            'name' => $t['name'] ?? 'Tier',
+                            'price' => $t['price'] ?? 0,
+                            'start_at' => $startAt,
+                            'end_at' => $endAt,
+                            'priority' => $priority,
+                            'stock' => isset($t['stock']) && $t['stock'] !== '' ? (int) $t['stock'] : null,
+                        ]);
+                        $keep[] = $newTier->id;
+                    }
+                }
+
+                $toDelete = array_diff($existingIds, $keep);
+                if (!empty($toDelete)) {
+                    \App\Models\TicketTier::whereIn('id', $toDelete)->delete();
+                }
+            }
+
+            $activeTier = $event->fresh()->getActiveTier();
+            if ($activeTier) {
+                $event->update(['price' => $activeTier->price]);
+            }
+        });
 
         return redirect()
             ->route('organizer.events.index')

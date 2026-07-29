@@ -115,9 +115,16 @@
                     class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
 
                 <div
-                    class="absolute top-4 left-4 px-3 py-1 bg-white/90 backdrop-blur rounded-lg text-xs font-bold uppercase text-indigo-600">
+                    class="absolute top-4 left-4 px-3 py-1 bg-white/90 backdrop-blur rounded-lg text-xs font-bold uppercase text-indigo-600 shadow-sm">
                     {{ $event->category->name ?? 'Tanpa Kategori' }}
                 </div>
+
+                @if($event->active_tier_name && $event->active_tier_name !== 'Regular')
+                    <div
+                        class="absolute top-4 right-4 px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg rounded-lg text-xs font-black uppercase tracking-wider">
+                        🔥 {{ $event->active_tier_name }}
+                    </div>
+                @endif
             </div>
 
             <div class="p-6">
@@ -222,16 +229,23 @@
 
                 <div class="flex items-start justify-between gap-4 pt-4 border-t">
                     <div>
-                        <span class="block text-sm text-slate-500">
-                            {{ $event->active_tier_name !== 'Regular' ? $event->active_tier_name : 'Harga Reguler' }}
+                        <span class="block text-xs font-bold text-indigo-600 uppercase tracking-wider">
+                            {{ $event->active_tier_name ? $event->active_tier_name : 'Harga Reguler' }}
                         </span>
-                        <span class="text-2xl font-black text-indigo-600">
-                            @if ($event->current_price == 0)
-                                Gratis
-                            @else
-                                Rp {{ number_format($event->current_price, 0, ',', '.') }}
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-2xl font-black text-indigo-600">
+                                @if ($event->current_price == 0)
+                                    Gratis
+                                @else
+                                    Rp {{ number_format($event->current_price, 0, ',', '.') }}
+                                @endif
+                            </span>
+                            @if($event->price > $event->current_price)
+                                <span class="text-xs text-slate-400 line-through font-semibold">
+                                    Rp {{ number_format($event->price, 0, ',', '.') }}
+                                </span>
                             @endif
-                        </span>
+                        </div>
                     </div>
 
                     <a href="{{ route('events.show', $event->id) }}"

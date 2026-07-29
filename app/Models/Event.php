@@ -33,13 +33,11 @@ class Event extends Model
         'presale_until' => 'datetime',
     ];
 
-    public function getCurrentPriceAttribute()
+    public function getActiveTier()
     {
         $now = now();
-
-        // Prefer explicit ticket tiers if any are defined for this event.
-        // Find first tier whose start_at <= now (or null) and end_at >= now (or null), ordered by priority.
         try {
+            // Check tier matching current date range
             $tier = $this->tiers()
                 ->where(function ($q) use ($now) {
                     $q->whereNull('start_at')->orWhere('start_at', '<=', $now);
@@ -51,13 +49,28 @@ class Event extends Model
                 ->first();
 
             if ($tier) {
-                return $tier->price;
+                return $tier;
+            }
+
+            // Fallback: if tiers exist but none currently match date filter, return first tier by priority
+            $firstTier = $this->tiers()->orderBy('priority', 'asc')->first();
+            if ($firstTier) {
+                return $firstTier;
             }
         } catch (\Throwable $e) {
-            // In case tiers table/migration not yet applied, fall back to legacy fields.
+            // ignore
+        }
+        return null;
+    }
+
+    public function getCurrentPriceAttribute()
+    {
+        $activeTier = $this->getActiveTier();
+        if ($activeTier) {
+            return $activeTier->price;
         }
 
-        // Legacy single-tier fallback (kept for backward compatibility)
+        $now = now();
         if ($this->early_bird_until && $now->lte($this->early_bird_until) && !is_null($this->early_bird_price)) {
             return $this->early_bird_price;
         }
@@ -69,28 +82,12 @@ class Event extends Model
 
     public function getActiveTierNameAttribute()
     {
-        $now = now();
-
-        // Check explicit tiers first
-        try {
-            $tier = $this->tiers()
-                ->where(function ($q) use ($now) {
-                    $q->whereNull('start_at')->orWhere('start_at', '<=', $now);
-                })
-                ->where(function ($q) use ($now) {
-                    $q->whereNull('end_at')->orWhere('end_at', '>=', $now);
-                })
-                ->orderBy('priority', 'asc')
-                ->first();
-
-            if ($tier) {
-                return $tier->name;
-            }
-        } catch (\Throwable $e) {
-            // ignore and fall back
+        $activeTier = $this->getActiveTier();
+        if ($activeTier) {
+            return $activeTier->name;
         }
 
-        // Legacy fallback
+        $now = now();
         if ($this->early_bird_until && $now->lte($this->early_bird_until) && !is_null($this->early_bird_price)) {
             return 'Early Bird';
         }

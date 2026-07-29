@@ -88,10 +88,14 @@
 
                             <td class="px-8 py-6">
                                 <p class="font-bold text-indigo-600">
-                                    Rp {{ number_format($event->price, 0, ',', '.') }}
+                                    Rp {{ number_format($event->current_price, 0, ',', '.') }}
                                 </p>
-
-                                <p class="text-xs text-slate-400">
+                                @if($event->active_tier_name)
+                                    <span class="inline-block mt-1 px-2 py-0.5 bg-indigo-50 text-indigo-600 font-bold text-[10px] uppercase rounded">
+                                        🔥 {{ $event->active_tier_name }}
+                                    </span>
+                                @endif
+                                <p class="text-xs text-slate-400 mt-1">
                                     Stok: {{ $event->stock }}
                                 </p>
                             </td>

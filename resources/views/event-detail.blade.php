@@ -152,6 +152,43 @@
 
         </div>
 
+        @if($event->tiers && $event->tiers->count() > 0)
+        <div class="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
+            <h2 class="text-2xl font-black text-slate-900 mb-6 flex items-center gap-2">
+                <span>🎟️</span> Kategori & Tier Penjualan Tiket
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                @foreach($event->tiers as $t)
+                    @php
+                        $isActive = ($event->active_tier_name === $t->name);
+                    @endphp
+                    <div class="p-5 rounded-2xl border-2 transition-all relative {{ $isActive ? 'border-indigo-600 bg-indigo-50/50 shadow-md ring-2 ring-indigo-600/20' : 'border-slate-100 bg-slate-50/50' }}">
+                        @if($isActive)
+                            <span class="absolute -top-3 right-4 px-3 py-0.5 bg-indigo-600 text-white font-black text-[10px] uppercase rounded-full tracking-wider shadow-sm">
+                                Aktif Saat Ini
+                            </span>
+                        @endif
+                        <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
+                            Fase {{ $loop->iteration }}
+                        </div>
+                        <h3 class="text-lg font-black text-slate-900 mb-2">{{ $t->name }}</h3>
+                        <div class="text-2xl font-black text-indigo-600 mb-3">
+                            @if($t->price == 0)
+                                Gratis
+                            @else
+                                Rp {{ number_format($t->price, 0, ',', '.') }}
+                            @endif
+                        </div>
+                        <div class="text-xs text-slate-500 space-y-1 font-medium border-t border-slate-200/60 pt-3 mt-2">
+                            <div>📅 {{ $t->start_at ? $t->start_at->format('d M Y') : 'Mulai Sekarang' }} - {{ $t->end_at ? $t->end_at->format('d M Y') : 'Selesai Event' }}</div>
+                            <div>📦 Sisa Stok: <span class="font-bold text-slate-700">{{ !is_null($t->stock) ? $t->stock . ' tiket' : 'Tak terbatas' }}</span></div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
 
         <!-- Kebijakan -->
 
