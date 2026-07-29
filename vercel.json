@@ -32,6 +32,7 @@
     ],
     "env": {
         "APP_ENV": "production",
+        "APP_KEY": "base64:tyFKhApeVSc0NmG8tCb9VJjhehvcf6Bzqf3J7JDh7cQ=",
         "APP_DEBUG": "false",
         "APP_URL": "https://eventamikom-3373.vercel.app",
         "GOOGLE_REDIRECT_URI": "https://eventamikom-3373.vercel.app/auth/google/callback",

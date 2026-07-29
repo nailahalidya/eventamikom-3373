@@ -11,15 +11,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->trustProxies(at: '*');
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
-            'organizer' => \App\Http\Middleware\OrganizerMiddleware::class,// Sesuaikan dengan nama class middleware admin Anda
+            'organizer' => \App\Http\Middleware\OrganizerMiddleware::class,
         ]);
-    })
-    ->withMiddleware(function (Middleware $middleware): void {
-        // Mendaftarkan alias middleware admin sesuai modul Pertemuan 8 (saya ganti jadi modul pertemuan 12)
         $middleware->validateCsrfTokens(except: [
-        '/midtrans/callback',
+            '/midtrans/callback',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
